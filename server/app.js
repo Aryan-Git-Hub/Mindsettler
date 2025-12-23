@@ -14,7 +14,10 @@ app.use(morgan('dev')); // It automatically logs every incoming HTTP request to 
 
 // Basic route to check if server is running
 import userRoute from "./routes/userRoute.js";
+import { protect } from "./middlewares/userMiddleware.js";
+import appointnentRoute from "./routes/appointmentRoute.js";
 app.use("/api/user", userRoute);
+app.use("/api/appointment", appointnentRoute);
 
 app.get("/", (req, res) => {
   res.send("ES Module Backend Running");
