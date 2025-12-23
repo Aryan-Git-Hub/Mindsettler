@@ -1,9 +1,17 @@
 import express from "express";
-import { getUserInfo } from "../controllers/userController.js";
+import { userSignup, login } from "../controllers/userController.js";
+import { protect } from "../middlewares/userMiddleware.js";
 
 const router = express.Router();
 
 // Sample route to get user information
-router.get("/info", getUserInfo);
+router.post("/signup", userSignup);
+router.post("/login", login);
+router.get("/profile", protect, (req, res) => {
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
+});
 
 export default router;
