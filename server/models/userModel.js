@@ -19,10 +19,14 @@ const userSchema = new mongoose.Schema({
     },
     role: { 
         type: String, 
-        enum: ['user', 'consultant', 'admin'], 
+        enum: ['user', 'admin'], 
         default: 'user' 
     },
     // Required for MindSettler's "Confidentiality Policy" check
+    isConsultant: { 
+        type: Boolean, 
+        default: false 
+    },
     hasAcceptedPolicy: { 
         type: Boolean, 
         default: false 

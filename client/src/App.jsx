@@ -1,5 +1,5 @@
 import React from 'react';
-import JourneySection from './components/journey/journeySection.jsx'; // Adjust path if needed
+import JourneySection from './components/journey/JourneySection.jsx'; // Adjust path if needed
 // import Home from './pages/home.jsx';
 // Import other parts of your layout
 // import Navbar from './components/navigation/Navbar';
