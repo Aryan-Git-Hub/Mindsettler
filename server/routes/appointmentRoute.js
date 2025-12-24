@@ -1,7 +1,7 @@
 import express from 'express';
 import { bookSession, getMyAppointments, updateStatus } from '../controllers/appointmentController.js';
 import { protect } from '../middlewares/userMiddleware.js';
-import { admin } from '../middlewares/adminMiddleware.js';
+import { consultant } from '../middlewares/consultantMiddleware.js';
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.use(protect);
 router.post('/book', bookSession);
 router.get('/my-sessions', getMyAppointments);
 
-// Admin only route (You'll need an admin check middleware)
-router.patch('/status/:id', admin, updateStatus);
+// Consultant only route
+router.patch('/status/:id', consultant, updateStatus);
 
 export default router;
