@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Sparkles, Heart, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
 
 // --- 1. ENHANCED HIGH-DENSITY BACKGROUND ---
 const MindDustBackground = () => {
@@ -96,21 +97,35 @@ const MindDustBackground = () => {
 const AuthPage = () => {
   const [view, setView] = useState('login'); 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => {
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    try {
+      setIsSubmitting(true);
+      const API = axios.create({ baseURL: 'http://localhost:4000/api' });
+      const response = await API.post(`/user/${view === 'login' ? 'login' : view === 'signup' ? 'signup' : 'forgot-password'}`, data);
+      const responseData = await response.data;
+      if (responseData.success) {
+        localStorage.setItem('token', data.token);
+        setView('success');
+        setIsSubmitting(false);
+      } else {
+        throw new Error('Submission failed');
+      }
+    } catch (error) {
+      console.error('Submission Error:', error.response?.data?.message);
+      setView('login');
       setIsSubmitting(false);
-      setView('success');
-    }, 1500);
+    }
   };
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-[#fcfaff] overflow-hidden p-6 font-sans">
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-5%] left-[-5%] w-[600px] h-[600px] bg-[#3F2965]/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[600px] bg-[#DD1764]/10 rounded-full blur-[140px]" />
+        <div className="absolute top-[-5%] left-[-5%] w-150 h-150 bg-[#3F2965]/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-5%] right-[-5%] w-150 h-150 bg-[#DD1764]/10 rounded-full blur-[140px]" />
       </div>
       
       <MindDustBackground />
@@ -124,10 +139,10 @@ const AuthPage = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
-            className="relative z-10 w-full max-w-[460px] bg-white/75 backdrop-blur-3xl p-12 rounded-[3.5rem] shadow-2xl border border-white/50 text-center"
+            className="relative z-10 w-full max-w-115 bg-white/75 backdrop-blur-3xl p-12 rounded-[3.5rem] shadow-2xl border border-white/50 text-center"
           >
             {/* Minimalist Logo */}
-            <div className="w-12 h-12 bg-gradient-to-br from-[#3F2965] to-[#DD1764] rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="w-12 h-12 bg-linear-to-br from-[#3F2965] to-[#DD1764] rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <Heart className="text-white" fill="white" size={20} />
             </div>
 
@@ -137,9 +152,9 @@ const AuthPage = () => {
             <p className="text-gray-400 text-sm mb-8">Secure your mental well-being journey.</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {view === 'signup' && <Input icon={<User />} placeholder="Full Name" required />}
-              <Input icon={<Mail />} type="email" placeholder="Email Address" required />
-              {view !== 'forgot' && <Input icon={<Lock />} type="password" placeholder="Password" required />}
+              {view === 'signup' && <Input icon={<User />} placeholder="Full Name" name="name" required />}
+              <Input icon={<Mail />} type="email" placeholder="Email Address" name="email" required />
+              {view !== 'forgot' && <Input icon={<Lock />} type="password" placeholder="Password" name="password" required />}
 
               <motion.button
                 whileHover={{ scale: 1.02 }}

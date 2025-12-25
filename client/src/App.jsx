@@ -3,8 +3,8 @@ import Home from './pages/Home';
 import PageNotFound from './pages/404';
 import AdminDashboard from './admin/Dashboard';
 import ScrollToTop from "./components/common/ScrollToTop";
-import AuthPage from "./pages/login.jsx";
-import Navbar from "./components/common/Navbar.jsx"; // Assuming path
+import Navbar from './components/common/Navbar';
+import AuthPage from "./pages/Authentication.jsx"
 
 // A small component to wrap public pages with the Navbar
 const PublicLayout = () => (
@@ -30,10 +30,8 @@ function App() {
         {/* GROUP 2: Admin Pages (No Public Navbar) */}
         {/* Your AdminDashboard has its own Sidebar, so it doesn't need a wrapper */}
         <Route path="/admin" element={<AdminDashboard />} />
-
-        {/* 404 Route */}
+        <Route path="/auth" element={<AuthPage/>} />
         <Route path="*" element={<PageNotFound />} />
-        
       </Routes>
     </BrowserRouter>
   );
