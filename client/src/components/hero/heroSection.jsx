@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import HeroImage from "../../assets/images/HeroImage.jpeg";
 import { useMotionValue, useSpring, useTransform } from "framer-motion";
 
@@ -108,7 +107,6 @@ const HeroSection = () => {
           >
             <span className="relative z-10 flex items-center gap-2">
               Get Started
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
             {/* Glossy shine effect animation */}
             <motion.div

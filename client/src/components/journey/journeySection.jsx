@@ -46,8 +46,9 @@ const JourneySection = () => {
       className="relative min-h-[250vh] py-32 overflow-hidden"
       // 3. Misty Valley Gradient Background
       style={{
-        background: `radial-gradient(circle at 0% 0%, #f3f0ff 0%, #ffffff 50%), 
-                     radial-gradient(circle at 100% 100%, #e0f2fe 0%, #ffffff 50%)`,
+        // background: `radial-gradient(circle at 0% 0%, #f3f0ff 0%, #ffffff 50%), 
+        //              radial-gradient(circle at 100% 100%, #e0f2fe 0%, #ffffff 50%)`,
+        backgroundColor: "#f3f1ff",
       }}
     >
       {/* 4. Floating Aura Blobs for Depth */}
