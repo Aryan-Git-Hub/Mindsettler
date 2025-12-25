@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import HeroImage from "../../assets/images/HeroImage.jpeg";
@@ -43,7 +42,10 @@ const HeroSection = () => {
   };
 
   return (
-    <div onMouseMove={handleMouseMove} className="relative h-screen w-full overflow-hidden flex items-center font-serif">
+    <div
+      onMouseMove={handleMouseMove}
+      className="relative h-screen w-full overflow-hidden flex items-center font-serif"
+    >
       {/* Background Image with Parallax Effect */}
       <motion.div
         initial={{ scale: 1.5 }}
