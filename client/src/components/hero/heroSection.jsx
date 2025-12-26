@@ -97,7 +97,7 @@ const HeroSection = () => {
 
         {/* Animated Button */}
         <motion.div variants={itemVariants}>
-          <a href="/login">
+          <a href="/auth">
           <motion.button
             whileHover={{
               scale: 1.05,

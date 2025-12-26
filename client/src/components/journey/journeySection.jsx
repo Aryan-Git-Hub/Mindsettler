@@ -109,7 +109,6 @@ const JourneySection = () => {
           />
         </svg>
 
-        {/* 6. Milestone Cards with Enhanced Backlighting */}
         {/* 6. Milestone Cards with Strong Back-Lighting */}
         <div className="relative z-10">
           {milestones.map((step, index) => {

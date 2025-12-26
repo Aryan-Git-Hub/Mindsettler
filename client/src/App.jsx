@@ -23,7 +23,6 @@ function App() {
         {/* GROUP 1: Public Pages (With Navbar) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<AuthPage />} />
           {/* Add other public pages like /about or /contact here */}
         </Route>
 
