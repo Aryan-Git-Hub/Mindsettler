@@ -15,19 +15,8 @@ app.use(morgan("dev")); // It automatically logs every incoming HTTP request to 
 import userRoute from "./routes/userRoute.js";
 import { protect } from "./middlewares/userMiddleware.js";
 import appointnentRoute from "./routes/appointmentRoute.js";
-import contactModel from "./models/contactModel.js";
 app.use("/api/user", userRoute);
 app.use("/api/appointment", appointnentRoute);
-app.post("/api/contact", async (req, res) => {
-  try {
-    const { name, email, serviceType, message } = req.body;
-    const newContact = await contactModel.create({ name, email, serviceType, message });
-    newContact.save();
-    res.status(200).json({ message: "Contact message received successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 app.get("/", (req, res) => {
   res.send("ES Module Backend Running");

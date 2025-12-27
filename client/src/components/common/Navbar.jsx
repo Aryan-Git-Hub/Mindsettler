@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import logo from "../../assets/icons/MindsettlerLogo-removebg-preview.png";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router"; // Use NavLink for active state detection
 import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
@@ -9,29 +9,29 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      // If user scrolls more than 80px, change the theme
       setIsScrolled(window.scrollY > 80);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
+  // Use useMemo or define inside to avoid mutation issues during re-renders
+  const baseLinks = [
     { name: "Home", href: "/" },
-    { name: "About", href: "#" },
-    { name: "Psycho-Education", href: "#" },
-    { name: "How it Works", href: "#" },
-    { name: "Resources", href: "#" },
-    { name: "Corporate Services", href: "#" },
+    { name: "About", href: "/about" },
+    { name: "Psycho-Education", href: "/education" },
+    { name: "How it Works", href: "/how-it-works" },
+    { name: "Resources", href: "/resources" },
+    { name: "Corporate Services", href: "/corporate" },
     { name: "Contact", href: "/contact" }
   ];
+
+  const navLinks = [...baseLinks];
   if (!user) {
     navLinks.push({ name: "Login", href: "/auth" });
   } else {
-    if (user.role==="admin") {
-      navLinks.push({ name: "Admin", href: "/admin" });
-    }
-    navLinks.push({ name: `Logout`, href: "/logout" });
+    if (user.role === "admin") navLinks.push({ name: "Admin", href: "/admin" });
+    navLinks.push({ name: "Logout", href: "/logout" });
   }
 
   return (
@@ -42,9 +42,8 @@ const Navbar = () => {
                     ${isScrolled 
                       ? "bg-white/70 backdrop-blur-xl border-black/10 shadow-xl" 
                       : "bg-white/10 backdrop-blur-lg border-white/30 shadow-lg"
-                    } border`}
+                    }`}
       >
-        {/* Brand / Logo Section */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img
@@ -56,27 +55,36 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Navigation Links */}
-        <ul className="hidden lg:flex items-center space-x-10">
+        <ul className="hidden lg:flex items-center space-x-8">
           {navLinks.map((link) => (
-            <li key={link.name}>
-              <Link
+            <li key={link.name} className="relative group py-2">
+              <NavLink
                 to={link.href}
-                className={`text-[15px] font-bold tracking-wide transition-colors duration-300 
-                           ${isScrolled 
-                             ? "text-[#38352f]" // Dark text for light background
-                             : "text-white drop-shadow-md" // White text for dark image
-                           } hover:text-[#E83E8C] whitespace-nowrap`}
+                className={({ isActive }) => `
+                  text-[15px] font-bold tracking-wide transition-all duration-300 whitespace-nowrap
+                  ${isScrolled ? "text-[#583f7a]" : "text-[#e04073]"}
+                  ${isActive ? "opacity-100" : "opacity-80 hover:opacity-100"}
+                `}
               >
-                {link.name}
-              </Link>
+                {({ isActive }) => (
+                  <>
+                    {link.name}
+                    {/* The Underline: Shows if Active OR on Hover */}
+                    <span 
+                      className={`absolute bottom-0 left-0 h-[2.5px] bg-current transition-all duration-300 ease-in-out
+                        ${isActive ? "w-full" : "w-0 group-hover:w-full"}
+                      `}
+                    />
+                  </>
+                )}
+              </NavLink>
             </li>
           ))}
         </ul>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Toggle */}
         <div className="lg:hidden">
-          <button className={`${isScrolled ? "text-[#38352f]" : "text-white"} transition-colors`}>
+          <button className={`${isScrolled ? "text-[#38352f]" : "text-white"}`}>
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16m-7 6h7" />
             </svg>
