@@ -34,9 +34,11 @@ const ContactPage = () => {
   ];
 
   return (
+    <>
+    <div className="h-25" />
     <div className="min-h-screen bg-[#FDFCF9] font-sans text-[#3F2965]">
       {/* Header Section */}
-      <section className="pt-20 pb-32 text-center px-4">
+      <section className="pt-5 pb-32 text-center px-4">
         <motion.h1 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,6 +146,7 @@ const ContactPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
