@@ -19,11 +19,12 @@ const Navbar = () => {
   const baseLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
+    { name: "Booking", href: "/booking" },
     { name: "Psycho-Education", href: "/education" },
     { name: "How it Works", href: "/how-it-works" },
     { name: "Resources", href: "/resources" },
     { name: "Corporate Services", href: "/corporate" },
-    { name: "Contact", href: "/contact" }
+    { name: "Contact", href: "/contact" },
   ];
 
   const navLinks = [...baseLinks];

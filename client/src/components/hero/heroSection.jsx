@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
 import HeroImage from "../../assets/images/HeroImage.jpeg";
 import { useMotionValue, useSpring, useTransform } from "framer-motion";
+import { Link } from "react-router";
+import { use } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const HeroSection = () => {
+  const { user } = useAuth();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -97,7 +101,7 @@ const HeroSection = () => {
 
         {/* Animated Button */}
         <motion.div variants={itemVariants}>
-          <a href="/auth">
+          <Link to={user ? "/booking" : "/auth"}>
           <motion.button
             whileHover={{
               scale: 1.05,
@@ -116,7 +120,7 @@ const HeroSection = () => {
               className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -skew-x-12"
             />
           </motion.button>
-          </a>
+          </Link>
         </motion.div>
       </motion.div>
 
