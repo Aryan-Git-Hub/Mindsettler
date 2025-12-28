@@ -29,7 +29,7 @@ const FAQSection = () => {
   const [activeId, setActiveId] = useState(1);
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] flex items-center justify-center p-6 md:p-12 font-sans overflow-hidden">
+    <div className="bg-[#FDFCF9] flex items-center justify-center p-6 md:p-12 font-sans overflow-hidden">
       <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         
         {/* Left Side: Content & Search */}
@@ -43,15 +43,6 @@ const FAQSection = () => {
             <h1 className="text-[#3F2965] text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Frequently Asked <br /> Questions
             </h1>
-            
-            {/* <div className="relative max-w-md group">
-              <input 
-                type="text" 
-                placeholder="Search question here"
-                className="w-full py-4 px-6 pr-12 rounded-full bg-[#F5F2ED] border-none focus:ring-2 focus:ring-[#Dd1764]/20 transition-all outline-none text-[#3F2965] placeholder-[#3F2965]/40 shadow-sm"
-              />
-              <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-[#3F2965]/30 group-focus-within:text-[#Dd1764] transition-colors" size={20} />
-            </div> */}
           </header>
 
           <div className="space-y-2">

@@ -1,16 +1,16 @@
 import React from "react";
 import { Facebook, Twitter, Linkedin, Youtube, Instagram } from "lucide-react";
 
-export default function MindSettlerFooter() {
+export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="bg-[#FDFCF9] flex flex-col">
       {/* Main content spacer */}
       <div className="grow"></div>
 
       {/* Footer */}
-      <footer className="bg-white">
+      <footer className="">
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -174,7 +174,7 @@ export default function MindSettlerFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="bg-[#1a1a2e] text-white py-4 px-6">
+        <div className="bg-[#1a1a2e] text-white py-8 px-6">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
             <div className="flex flex-wrap gap-4 text-gray-400">
               <a href="#" className="hover:text-white transition-colors">

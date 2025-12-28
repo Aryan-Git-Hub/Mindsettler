@@ -136,8 +136,8 @@ export const getMe = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("token", "none", {
-      expires: new Date(Date.now() + 1000), // 1 seconds
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",

@@ -43,7 +43,7 @@ const JourneySection = () => {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[250vh] py-32 overflow-hidden"
+      className="relative pt-5 overflow-hidden"
       // 3. Misty Valley Gradient Background
       style={{
         // background: `radial-gradient(circle at 0% 0%, #f3f0ff 0%, #ffffff 50%), 
