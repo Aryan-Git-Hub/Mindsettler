@@ -26,7 +26,7 @@ app.use("/api/user", userRoute);
 app.use("/api/appointment", appointnentRoute);
 app.use("/api/admin", adminRoute);
 // wallet transaction routes
-app.use('/api/wallet-transactions', protect, walletTransactionsRoute)
+app.use('/api/transactions', protect, walletTransactionsRoute)
 
 app.get("/", (req, res) => {
   res.send("ES Module Backend Running");

@@ -11,7 +11,7 @@ export const bookSession = async (req, res) => {
     const { therapyType, sessionType, timeSlot, availabilityRef, notes } =
       req.body;
 
-    const sessionPrice = process.env.SESSION_PRICE;
+    const sessionPrice = Number(process.env.SESSION_PRICE);
 
     // 1. Check User Wallet Balance
     const user = await User.findById(req.user._id);
@@ -67,7 +67,7 @@ export const bookSession = async (req, res) => {
       timeSlot,
       notes,
       isPaid: true,
-      status: "Confirmed", // Directly confirmed since paid via wallet
+      status: "confirmed", // Directly confirmed since paid via wallet
     });
 
     // 5. Create Wallet Transaction History (The Ledger)
@@ -96,10 +96,10 @@ export const updateStatus = async (req, res) => {
     if (!appointment)
       return res.status(404).json({ message: "Appointment not found" });
 
-    // If an appointment is Rejected, we must refund the user's wallet
-    if (status === "Rejected" && appointment.status !== "Rejected") {
+    // If an appointment is rejected, we must refund the user's wallet
+    if (status === "rejected" && appointment.status !== "rejected") {
       const user = await User.findById(appointment.user);
-      const refundAmount = process.env.SESSION_PRICE; // Match session price
+      const refundAmount = Number(process.env.SESSION_PRICE); // Match session price
 
       // Refund logic
       user.walletBalance += refundAmount;

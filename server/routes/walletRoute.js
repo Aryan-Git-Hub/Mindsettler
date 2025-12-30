@@ -5,7 +5,7 @@ import { admin } from "../middlewares/adminMiddleware.js";
 const router = express.Router()
 
 router.get('/', admin, getAllTransactions);
-router.get('/user-transactions', getUserTransactions);
+router.get('/user-wallet-transactions', getUserTransactions);
 router.post('/create-transaction', createTransaction);
 router.patch('/aproove-topup/:id', admin, approveTopup);
 router.patch('/reject-topup/:id', admin, rejectTopup);

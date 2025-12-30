@@ -16,7 +16,7 @@ export const getAllTransactions = async (req, res) => {
 
 export const getUserTransactions = async (req, res) => {
     try {
-        const transactions = await Transaction.find({user:req.user._id})
+        const transactions = await WalletTransaction.find({user:req.user._id})
             .populate('user', 'name email')
 
         res.status(200).json({ success: true, count:transactions.length, data: transactions });
@@ -56,7 +56,7 @@ export const createTransaction = async (req, res) => {
             user: req.user._id, // From your protect middleware
             amount,
             transactionId,
-            status: 'Pending' // Admin will change this to 'Completed' later
+            status: 'pending' // Admin will change this to 'completed' later
         });
 
         res.status(201).json({
@@ -79,7 +79,7 @@ export const createTransaction = async (req, res) => {
 export const approveTopup = async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
-        if (!transaction || transaction.status !== 'Pending') {
+        if (!transaction || transaction.status !== 'pending') {
             return res.status(400).json({ message: "Invalid transaction or already processed" });
         }
         const user = await User.findById(transaction.user);
@@ -89,7 +89,7 @@ export const approveTopup = async (req, res) => {
         await user.save();
 
         // 2. Update Transaction Status
-        transaction.status = 'Completed';
+        transaction.status = 'completed';
         await transaction.save();
 
         // 3. Create a record in Wallet History (Ledger)
@@ -125,14 +125,14 @@ export const rejectTopup = async (req, res) => {
         }
 
         // 2. Ensure it hasn't been processed already
-        if (transaction.status === 'Completed') {
+        if (transaction.status !== 'pending') {
             return res.status(400).json({ 
                 message: `Cannot reject. Transaction is already ${transaction.status}.` 
             });
         }
 
-        // 3. Update status to Failed
-        transaction.status = 'Failed';
+        // 3. Update status to rejected
+        transaction.status = 'rejected';
         
         await transaction.save();
 

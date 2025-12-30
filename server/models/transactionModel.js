@@ -7,8 +7,8 @@ const transactionSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["Pending", "Completed", "Failed"],
-      default: "Pending",
+      enum: ["pending", "completed", "rejected"],
+      default: "pending",
     },
     transactionId: { type: String, unique: true, sparse: true }, // UPI Ref for top-ups
   },
@@ -38,7 +38,7 @@ const walletTransactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "failed"],
+      enum: ["pending", "completed", "rejected"],
       default: "pending",
     },
     referenceId: {
