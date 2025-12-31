@@ -38,9 +38,9 @@ export const setAvailability = async (req, res) => {
  * @route   GET /api/admin/appointments
  * @access  Private/Admin
  */
-export const getAllAppointments = async (req, res) => {
+export const getPendingAppointments = async (req, res) => {
     try {
-        const appointments = await Appointment.find()
+        const appointments = await Appointment.find({ status:"confirmed" })
             .populate('user', 'name email')
             .sort({ date: 1, timeSlot: 1 });
 

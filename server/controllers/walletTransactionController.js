@@ -2,9 +2,9 @@ import { Transaction } from "../models/transactionModel.js"
 import User from "../models/userModel.js";
 import { WalletTransaction } from "../models/transactionModel.js";
 
-export const getAllTransactions = async (req, res) => {
+export const getPendingTransactions = async (req, res) => {
     try {
-        const transactions = await Transaction.find()
+        const transactions = await Transaction.find({ status:"pending" })
             .populate('user', 'name email')
 
         res.status(200).json({ success: true, count:transactions.length, data: transactions });

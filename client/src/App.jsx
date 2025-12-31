@@ -1,10 +1,9 @@
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/home.jsx";
 import ContactPage from "./pages/Contact.jsx";
 import AuthPage from "./pages/Authentication.jsx";
 import PageNotFound from "./pages/404";
 import ScrollToTop from "./components/common/ScrollToTop";
-import Navbar from "./components/common/Navbar";
 import AdminDashboard from "./admin/Dashboard";
 import Logout from "./components/auth/Logout.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
@@ -25,7 +24,7 @@ function App() {
         <Route path="/booking" element={<BookingPage/>}/>
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/corporate" element={<CorporateServices/>}/>
-        <Route path="/profile" element={<UserProfile/>}/>
+        {user && <Route path="/profile" element={<UserProfile />} />}
         {!user && <Route path="/auth" element={<AuthPage />} />}
         <Route path="/logout" element={<Logout />} />
         {/* GROUP 2: Admin Pages (No Public Navbar) */}

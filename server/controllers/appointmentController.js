@@ -91,13 +91,17 @@ export const bookSession = async (req, res) => {
 export const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    console.log(status);
     const appointment = await Appointment.findById(req.params.id);
 
     if (!appointment)
       return res.status(404).json({ message: "Appointment not found" });
 
     // If an appointment is rejected, we must refund the user's wallet
-    if (status === "rejected" && appointment.status !== "rejected") {
+    if (appointment.status === "rejected" || appointment.status === "completed") {
+      return res.status(400).send("Appointment is already "+appointment.status);
+    }
+    if (status === "rejected") {
       const user = await User.findById(appointment.user);
       const refundAmount = Number(process.env.SESSION_PRICE); // Match session price
 
