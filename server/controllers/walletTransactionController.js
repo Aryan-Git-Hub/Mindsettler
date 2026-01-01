@@ -59,6 +59,16 @@ export const createTransaction = async (req, res) => {
             status: 'pending' // Admin will change this to 'completed' later
         });
 
+        await WalletTransaction.create({
+            user: req.user._id,
+            amount: amount,
+            type: 'credit',
+            purpose: 'topup',
+            status: 'pending',
+            referenceId: newTransaction._id, // Store the UPI Ref ID
+            balanceAfter: req.user.walletBalance
+        });
+
         res.status(201).json({
             success: true,
             message: "Top-up request submitted. Please wait for admin approval.",
@@ -76,39 +86,58 @@ export const createTransaction = async (req, res) => {
  * @route   PATCH /api/admin/approve-topup/:id
  * @access  Private/Admin
  */
+/**
+ * @desc    Approve a pending UPI Top-up request
+ * @route   PATCH /api/admin/approve-topup/:id
+ * @access  Private/Admin
+ */
 export const approveTopup = async (req, res) => {
+    // Start a session for atomicity (Atomic Transactions)
+    const session = await User.startSession();
+    session.startTransaction();
+
     try {
-        const transaction = await Transaction.findById(req.params.id);
+        const transaction = await Transaction.findById(req.params.id).session(session);
+        
         if (!transaction || transaction.status !== 'pending') {
             return res.status(400).json({ message: "Invalid transaction or already processed" });
         }
-        const user = await User.findById(transaction.user);
-        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const user = await User.findById(transaction.user).session(session);
+        if (!user) {
+            await session.abortTransaction();
+            return res.status(404).json({ message: "User not found" });
+        }
+
         // 1. Update User Balance
         user.walletBalance += transaction.amount;
-        await user.save();
+        await user.save({ session });
 
         // 2. Update Transaction Status
         transaction.status = 'completed';
-        await transaction.save();
+        await transaction.save({ session });
 
-        // 3. Create a record in Wallet History (Ledger)
-        await WalletTransaction.create({
-            user: user._id,
-            amount: transaction.amount,
-            type: 'credit',
-            purpose: 'topup',
-            status: 'completed',
-            referenceId: transaction.transactionId, // Store the UPI Ref ID
-            balanceAfter: user.walletBalance
-        });
+        // 3. Update Wallet History (Ledger)
+        // Note: Added 'await' and fixed the findOne logic
+        const wallet_transaction = await WalletTransaction.findOne({ referenceId: transaction._id }).session(session);
+        
+        if (wallet_transaction) {
+            wallet_transaction.status = "completed";
+            await wallet_transaction.save({ session });
+        }
+
+        // Commit all changes
+        await session.commitTransaction();
+        session.endSession();
 
         res.status(200).json({ success: true, message: "Wallet topped up successfully" });
     } catch (error) {
+        // Rollback on error
+        await session.abortTransaction();
+        session.endSession();
         res.status(500).json({ message: error.message });
     }
 };
-
 
 /**
  * @desc    Reject a pending UPI Top-up request
@@ -117,24 +146,29 @@ export const approveTopup = async (req, res) => {
  */
 export const rejectTopup = async (req, res) => {
     try {
-        // 1. Find the transaction
         const transaction = await Transaction.findById(req.params.id);
 
         if (!transaction) {
             return res.status(404).json({ message: "Transaction request not found." });
         }
 
-        // 2. Ensure it hasn't been processed already
         if (transaction.status !== 'pending') {
             return res.status(400).json({ 
                 message: `Cannot reject. Transaction is already ${transaction.status}.` 
             });
         }
 
-        // 3. Update status to rejected
+        // 1. Update Transaction status
         transaction.status = 'rejected';
-        
         await transaction.save();
+
+        // 2. Find and update the corresponding WalletTransaction ledger
+        const wallet_transaction = await WalletTransaction.findOne({ referenceId: transaction._id });
+        
+        if (wallet_transaction) {
+            wallet_transaction.status = "rejected";
+            await wallet_transaction.save();
+        }
 
         res.status(200).json({ 
             success: true, 
