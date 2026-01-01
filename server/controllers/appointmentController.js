@@ -44,7 +44,6 @@ export const bookSession = async (req, res) => {
         .json({ message: "Slot is no longer available or already booked." });
     } else {
       const slotDateTime = new Date(`${availability.date} ${timeSlot}`);
-      console.log(slotDateTime < new Date() || !availability.isActive);
       if (slotDateTime < new Date() || !availability.isActive) {
         // ROLLBACK: If it's in the past, unbook the slot before returning error
         await Availability.updateOne(

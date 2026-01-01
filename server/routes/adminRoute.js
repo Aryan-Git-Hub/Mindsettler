@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect } from '../middlewares/userMiddleware.js';
 import { getPendingAppointments, setAvailability } from '../controllers/adminController.js';
-import { admin } from '../middlewares/adminMiddleware.js';
+import { admin, validateAvailability } from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(protect, admin);
 
 // User routes
-router.post('/set-availability', setAvailability);
+router.post('/set-availability', validateAvailability, setAvailability);
 router.get('/pending-appointments', getPendingAppointments);
 
 export default router;

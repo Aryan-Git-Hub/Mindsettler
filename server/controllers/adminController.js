@@ -1,7 +1,5 @@
 import { Availability } from '../models/adminModel.js';
 import Appointment from '../models/appointmentModel.js';
-import { Transaction, WalletTransaction } from '../models/transactionModel.js';
-import User from '../models/userModel.js';
 
 /**
  * @desc    Create/Update availability slots for a specific date
@@ -11,11 +9,10 @@ import User from '../models/userModel.js';
 
 export const setAvailability = async (req, res) => {
     try {
-        const { date, slots } = req.body; // slots is an array of strings: ["9:00 AM", "10:00 AM"]
+        const { date, slots } = req.body;
 
         // Format slots into the object structure required by the schema
-        const slots_arr = JSON.parse(slots);
-        const formattedSlots = slots_arr.map(time => ({
+        const formattedSlots = slots.map(time => ({
             time,
             isBooked: false
         }));
