@@ -19,9 +19,7 @@ const Navbar = () => {
   const baseLinks = [
     { name: "Home", href: "/" },
     { name: "Booking", href: "/booking" },
-    { name: "Psycho-Education", href: "/education" },
-    { name: "How it Works", href: "/how-it-works" },
-    { name: "Resources", href: "/resources" },
+    { name: "Blogs", href: "/blogs" },
     { name: "Corporate Services", href: "/corporate" },
     { name: "Contact", href: "/contact" },
   ];
@@ -56,7 +54,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <ul className="hidden lg:flex items-center space-x-8">
+        <ul className="hidden lg:flex justify-between items-center space-x-8 min-w-[60%]">
           {navLinks.map((link) => (
             <li key={link.name} className="relative group py-1">
               <NavLink

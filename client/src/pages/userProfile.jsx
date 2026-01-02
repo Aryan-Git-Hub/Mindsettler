@@ -16,6 +16,7 @@ import {
   ArrowDownLeft,
   Clock,
   Hash,
+  MessageSquare,
 } from "lucide-react";
 import Logo from "../assets/icons/MindsettlerLogo-removebg-preview.png";
 import API from "../api/axios";
@@ -276,7 +277,7 @@ const WalletView = ({ user }) => {
                         {txn.type === "debit" && txn.referenceId && (
                           <p className="text-[9px] font-bold text-[#3F2965] flex items-center gap-1">
                             <Hash size={10} className="text-[#Dd1764]" />{" "}
-                            Session ID: {txn.referenceId}
+                            Session ID: {txn.referenceId.toUpperCase()}
                           </p>
                         )}
                       </div>
@@ -373,7 +374,8 @@ const MyBookingsView = () => {
     const fetchSessions = async () => {
       try {
         const res = await API.get("/appointment/my-sessions");
-        setSessions(res.data.data || []);
+        // We reverse the array so the most recent bookings appear first
+        setSessions((res.data.data || []));
       } catch (err) {
         console.error(err);
       } finally {
@@ -408,46 +410,70 @@ const MyBookingsView = () => {
           {sessions.map((session) => (
             <div
               key={session._id}
-              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md"
+              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden transition-all hover:shadow-md flex flex-col justify-between"
             >
+              {/* ID Tag */}
               <div className="absolute top-0 right-0 bg-slate-50 px-4 py-1.5 rounded-bl-2xl border-l border-b border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                   <Hash size={10} className="text-[#Dd1764]" /> ID:{" "}
-                  {session._id}
+                  {session._id.slice(-6).toUpperCase()}
                 </p>
               </div>
 
+              {/* Status & Icon */}
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-pink-50 text-[#Dd1764] rounded-2xl">
                   <Clock size={20} />
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                  className={`mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase ${
                     session.status === "completed"
                       ? "bg-green-50 text-green-600"
+                      : session.status === "rejected"
+                      ? "bg-red-50 text-red-600"
                       : "bg-amber-50 text-amber-600"
                   }`}
                 >
                   {session.status}
                 </span>
               </div>
-              <h4 className="font-bold text-[#3F2965] text-lg mb-1">
-                {session.therapyType || "Therapy Session"}
-              </h4>
-              <p className="text-sm text-slate-500 font-medium flex items-center gap-2 mb-4">
-                <CalendarCheck size={14} />{" "}
-                {new Date(session.date).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}{" "}
-                • {session.timeSlot}
-              </p>
+
+              {/* Session Info */}
+              <div className="mb-4">
+                <h4 className="font-bold text-[#3F2965] text-lg mb-1 leading-tight">
+                  {session.therapyType || "Therapy Session"}
+                </h4>
+                <p className="text-sm text-slate-500 font-medium flex items-center gap-2">
+                  <CalendarCheck size={14} className="text-slate-400" />
+                  {new Date(session.date).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  • {session.timeSlot}
+                </p>
+              </div>
+
+              {/* --- NEW: SESSION NOTES SECTION --- */}
+              <div className="mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare size={12} className="text-[#3F2965]" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Notes</p>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed italic">
+                  {session.notes ? `"${session.notes}"` : "No specific notes provided for this session."}
+                </p>
+              </div>
+
+              {/* Footer */}
               <div className="pt-4 border-t border-slate-50 flex items-center justify-between font-bold text-[#3F2965] text-xs uppercase tracking-widest">
-                <span>{session.sessionType || "Online"}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${session.sessionType === 'online' ? 'bg-blue-400' : 'bg-orange-400'}`}></span>
+                  {session.sessionType || "Online"}
+                </div>
                 {session.status === "pending" && (
-                  <button className="text-[#Dd1764] hover:translate-x-1 transition-all">
-                    Reschedule →
+                  <button className="text-[#Dd1764] hover:translate-x-1 transition-all flex items-center gap-1">
+                    Reschedule <ChevronDown size={14} />
                   </button>
                 )}
               </div>

@@ -17,7 +17,8 @@ export const getPendingTransactions = async (req, res) => {
 export const getUserTransactions = async (req, res) => {
     try {
         const transactions = await WalletTransaction.find({user:req.user._id})
-            .populate('user', 'name email')
+            .sort({ createdAt: -1 })
+            .populate('user', 'name email');
 
         res.status(200).json({ success: true, count:transactions.length, data: transactions });
     } catch (error) {
