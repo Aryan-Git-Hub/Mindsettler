@@ -24,7 +24,8 @@ import {
   Info,
   BrainCircuit,
   Video,
-  MessageSquare
+  MessageSquare,
+  Calendar
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -416,11 +417,43 @@ const AppointmentsView = () => {
 
 // --- 4. TIME SLOTS VIEW ---
 const TimeSlotsView = () => {
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [newSlot, setNewSlot] = useState("");
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // --- FETCH EXISTING SLOTS FOR SELECTED DATE ---
+  const checkExistingAvailability = async () => {
+    if (!date) return;
+    setFetching(true);
+    try {
+      // Using your existing get-availability endpoint
+      const res = await API.get(`/appointment/get-availability?date=${date}`);
+      
+      // If slots exist, the backend returns an array of objects/strings
+      // We extract the 'time' property to match the frontend state
+      const existingSlots = res.data.data?.slots || [];
+      const formattedSlots = existingSlots.map(s => typeof s === 'object' ? s.time : s);
+      
+      setSlots(formattedSlots.sort());
+    } catch (e) {
+      // If 404, it means no slots are set yet, which is fine
+      if (e.response?.status === 404) {
+        setSlots([]);
+      } else {
+        console.error("Fetch error:", e);
+      }
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  // Trigger fetch whenever the date changes
+  useEffect(() => {
+    if (date) checkExistingAvailability();
+  }, [date]);
 
   const addSlot = () => {
     if (newSlot && !slots.includes(newSlot)) {
@@ -432,12 +465,16 @@ const TimeSlotsView = () => {
   const publishAvailability = async () => {
     setLoading(true);
     try {
+      // The backend logic provided earlier handles overwriting/updating the date
       await API.post("/admin/set-availability", { date, slots });
       setShowSuccess(true);
       setSlots([]); setDate("");
       setTimeout(() => setShowSuccess(false), 3000);
-    } catch (e) { alert("Error: " + (e.response?.data?.message || "Failed")); }
-    finally { setLoading(false); }
+    } catch (e) { 
+        alert("Error: " + (e.response?.data?.message || "Failed")); 
+    } finally { 
+        setLoading(false); 
+    }
   };
 
   return (
@@ -447,29 +484,74 @@ const TimeSlotsView = () => {
           <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-100">
             <Check size={40} strokeWidth={3} className="animate-bounce" />
           </div>
-          <h3 className="text-2xl font-black text-[#3F2965]">Schedule Live!</h3>
+          <h3 className="text-2xl font-black text-[#3F2965]">Schedule Updated!</h3>
         </div>
       )}
 
+      <div className="flex items-center gap-2 mb-2">
+        <Calendar size={18} className="text-[#3F2965]" />
+        <h2 className="font-black text-xs uppercase tracking-widest text-slate-400">Manage Availability</h2>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#3F2965]" />
+        <div className="relative">
+          <input 
+            type="date" 
+            value={date} 
+            onChange={(e) => setDate(e.target.value)} 
+            className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#3F2965]" 
+          />
+          {fetching && <Loader2 size={16} className="absolute right-4 top-5 animate-spin text-[#3F2965]" />}
+        </div>
+        
         <div className="flex gap-2">
-          <input type="time" value={newSlot} onChange={(e) => setNewSlot(e.target.value)} className="flex-1 p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#3F2965]" />
-          <button onClick={addSlot} className="p-4 bg-[#3F2965] text-white rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
+          <input 
+            type="time" 
+            value={newSlot} 
+            onChange={(e) => setNewSlot(e.target.value)} 
+            className="flex-1 p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#3F2965]" 
+          />
+          <button 
+            onClick={addSlot} 
+            disabled={!date}
+            className="p-4 bg-[#3F2965] text-white rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
+          >
+            <Plus size={20} />
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 p-6 bg-slate-50 rounded-2xl border-2 border-dashed min-h-25">
-        {slots.map(s => (
-          <div key={s} className="bg-white text-[#3F2965] px-5 py-2 rounded-2xl font-black border shadow-sm flex items-center gap-3">
-            {s} <X size={14} className="cursor-pointer text-red-300 hover:text-red-500" onClick={() => setSlots(slots.filter(t => t !== s))} />
-          </div>
-        ))}
+      <div className="space-y-3">
+        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+            {slots.length > 0 ? "Current Slots for this date" : "No slots added yet"}
+        </p>
+        <div className="flex flex-wrap gap-3 p-6 bg-slate-50 rounded-2xl border-2 border-dashed min-h-25">
+            {slots.map(s => (
+            <div key={s} className="bg-white text-[#3F2965] px-5 py-2 rounded-2xl font-black border shadow-sm flex items-center gap-3 animate-in fade-in zoom-in">
+                {s} 
+                <X 
+                    size={14} 
+                    className="cursor-pointer text-red-300 hover:text-red-500 transition-colors" 
+                    onClick={() => setSlots(slots.filter(t => t !== s))} 
+                />
+            </div>
+            ))}
+        </div>
       </div>
 
-      <button disabled={loading || slots.length === 0 || !date} onClick={publishAvailability} className="w-full py-5 bg-[#Dd1764] text-white font-black rounded-2xl shadow-xl flex justify-center items-center gap-3 hover:opacity-90 disabled:opacity-30 transition-all">
-        {loading ? <Loader2 className="animate-spin" size={24} /> : <><TrendingUp size={20} /> Broadcast To Client Portal</>}
+      <button 
+        disabled={loading || !date} 
+        onClick={publishAvailability} 
+        className="w-full py-5 bg-[#Dd1764] text-white font-black rounded-2xl shadow-xl flex justify-center items-center gap-3 hover:opacity-90 disabled:opacity-30 transition-all"
+      >
+        {loading ? <Loader2 className="animate-spin" size={24} /> : <><TrendingUp size={20} /> Update Portal Schedule</>}
       </button>
+      
+      {date && !fetching && slots.length === 0 && (
+          <p className="text-center text-[10px] font-bold text-amber-500 uppercase">
+              Note: Publishing with 0 slots will clear the schedule for this day.
+          </p>
+      )}
     </div>
   );
 };
