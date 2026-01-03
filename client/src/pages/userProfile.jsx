@@ -416,7 +416,7 @@ const MyBookingsView = () => {
               <div className="absolute top-0 right-0 bg-slate-50 px-4 py-1.5 rounded-bl-2xl border-l border-b border-slate-100">
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                   <Hash size={10} className="text-[#Dd1764]" /> ID:{" "}
-                  {session._id.slice(-6).toUpperCase()}
+                  {session._id.toUpperCase()}
                 </p>
               </div>
 
@@ -490,11 +490,18 @@ const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("Profile");
   const navigate = useNavigate();
   const { user } = useAuth();
+
   useEffect(() => {
-    if (window.location.hash === "#bookings") {
-      setActiveTab("My Bookings");
-    }
+    const syncTabFromHash = () => {
+      const hash = decodeURIComponent(window.location.hash.replace("#", ""));
+      const matched = menuItems.find(item => item.name === hash);
+      setActiveTab(matched ? matched.name : "Profile");
+    };
+    syncTabFromHash();
+    window.addEventListener("hashchange", syncTabFromHash);
+    return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
+
   const menuItems = [
     { name: "Profile", icon: User },
     { name: "My Wallet", icon: Wallet },
@@ -514,8 +521,9 @@ const UserDashboard = () => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <button
+              <a
                 key={item.name}
+                href={`#${encodeURIComponent(item.name)}`}
                 onClick={() => setActiveTab(item.name)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                   activeTab === item.name
@@ -524,7 +532,7 @@ const UserDashboard = () => {
                 }`}
               >
                 <Icon size={18} /> {item.name}
-              </button>
+              </a>
             );
           })}
         </nav>

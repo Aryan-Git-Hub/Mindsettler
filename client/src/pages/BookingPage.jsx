@@ -19,8 +19,10 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import API from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 const BookingPage = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const scrollableRef = useRef(null); // Ref for scrolling to top on error
 
@@ -144,6 +146,7 @@ const BookingPage = () => {
         notes: note,
         availabilityRef: availabilityId,
       });
+      user.walletBalance -= 500;
       setShowSuccess(true);
     } catch (err) {
       setErrorMsg(
@@ -226,7 +229,7 @@ const BookingPage = () => {
                 Payment successful. Your session is confirmed.
               </p>
               <button
-                onClick={() => navigate("/profile#bookings")}
+                onClick={() => navigate(`/profile#${encodeURIComponent('My Bookings')}`)}
                 className="w-full py-5 bg-[#3F2965] text-white rounded-2xl font-black flex items-center justify-center gap-2"
               >
                 Go to My Sessions <ArrowRight size={20} />

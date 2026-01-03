@@ -27,7 +27,7 @@ import {
   MessageSquare,
   Calendar,
   Trash2,
-  Power
+  CalendarIcon,
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -235,8 +235,10 @@ const AppointmentsView = () => {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
   
-  // State for the Details Modal
+  // UI Feedback & Modal States
   const [selectedApp, setSelectedApp] = useState(null);
+  const [modalError, setModalError] = useState("");
+  const [tableError, setTableError] = useState("");
 
   useEffect(() => {
     API.get("/admin/pending-appointments")
@@ -244,17 +246,29 @@ const AppointmentsView = () => {
         setAppointments(res.data.data || []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setTableError("Failed to load appointments. Please refresh.");
+        setLoading(false);
+      });
   }, []);
 
   const updateStatus = async (id, status) => {
     setActionId(id);
+    setModalError(""); 
+    setTableError("");
+
     try {
       await API.patch(`/appointment/status/${id}`, { status });
+      // Remove from list after successful action
       setAppointments((prev) => prev.filter((app) => app._id !== id));
-      if (selectedApp?._id === id) setSelectedApp(null); // Close modal if open
+      if (selectedApp?._id === id) setSelectedApp(null);
     } catch (e) {
-      alert("Failed to update status");
+      const errorText = e.response?.data?.message || "Action failed. Please try again.";
+      if (selectedApp) {
+        setModalError(errorText);
+      } else {
+        setTableError(errorText);
+      }
     } finally {
       setActionId(null);
     }
@@ -269,6 +283,17 @@ const AppointmentsView = () => {
 
   return (
     <div className="relative">
+      {/* --- TABLE ERROR BANNER --- */}
+      {tableError && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+          <AlertCircle size={18} />
+          <p className="text-sm font-bold">{tableError}</p>
+          <button onClick={() => setTableError("")} className="ml-auto hover:bg-red-100 p-1 rounded-full transition-colors">
+            <X size={16}/>
+          </button>
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl border shadow-sm overflow-hidden animate-in fade-in duration-500">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b">
@@ -281,7 +306,9 @@ const AppointmentsView = () => {
           <tbody>
             {appointments.length === 0 ? (
               <tr>
-                <td colSpan="3" className="p-10 text-center text-slate-400 font-medium">No pending appointments.</td>
+                <td colSpan="3" className="p-10 text-center text-slate-400 font-medium uppercase text-xs tracking-widest">
+                  No pending appointments found.
+                </td>
               </tr>
             ) : (
               appointments.map((app, idx) => (
@@ -292,11 +319,10 @@ const AppointmentsView = () => {
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-slate-800 text-sm">{app.user?.name}</p>
-                        {/* VIEW DETAILS BUTTON */}
                         <button 
-                          onClick={() => setSelectedApp(app)}
+                          onClick={() => { setSelectedApp(app); setModalError(""); }}
                           className="p-1 rounded-full hover:bg-slate-200 text-slate-400 transition-colors"
-                          title="View Full Details"
+                          title="View Details"
                         >
                           <Info size={14} />
                         </button>
@@ -317,14 +343,14 @@ const AppointmentsView = () => {
                       <button
                         disabled={actionId === app._id}
                         onClick={() => updateStatus(app._id, "rejected")}
-                        className="px-4 py-2 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl hover:bg-red-100 disabled:opacity-50"
+                        className="px-4 py-2 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all disabled:opacity-50"
                       >
                         {actionId === app._id ? <Loader2 size={14} className="animate-spin" /> : "Reject"}
                       </button>
                       <button
                         disabled={actionId === app._id}
                         onClick={() => updateStatus(app._id, "completed")}
-                        className="px-4 py-2 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 disabled:opacity-50"
+                        className="px-4 py-2 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-all disabled:opacity-50"
                       >
                         {actionId === app._id ? <Loader2 size={14} className="animate-spin" /> : "Complete"}
                       </button>
@@ -353,8 +379,15 @@ const AppointmentsView = () => {
             </div>
 
             {/* Body */}
-            <div className="p-8 space-y-6">
-              {/* Therapy Type */}
+            <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              {/* MODAL ERROR BANNER */}
+              {modalError && (
+                <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-2 text-[10px] font-black uppercase animate-pulse">
+                  <AlertCircle size={14} /> {modalError}
+                </div>
+              )}
+
+              {/* Therapy Details */}
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-purple-50 text-[#3F2965] rounded-2xl"><BrainCircuit size={20} /></div>
                 <div>
@@ -363,7 +396,23 @@ const AppointmentsView = () => {
                 </div>
               </div>
 
-              {/* Schedule & Format */}
+              {/* Appointment Date */}
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><CalendarIcon size={20} /></div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">Date</p>
+                  <p className="text-sm font-bold text-slate-700">
+                    {new Date(selectedApp.availabilityRef).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Time & Session Format */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-pink-50 text-[#Dd1764] rounded-lg"><Clock size={16} /></div>
@@ -383,11 +432,11 @@ const AppointmentsView = () => {
                 </div>
               </div>
 
-              {/* Notes Section */}
+              {/* Client Notes */}
               <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
                 <div className="flex items-center gap-2 mb-2 text-[#3F2965]">
                   <MessageSquare size={14} />
-                  <p className="text-[10px] font-black uppercase">Client Notes</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest">Client Notes</p>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed italic">
                   "{selectedApp.notes || "No additional notes provided by the client."}"
@@ -398,16 +447,18 @@ const AppointmentsView = () => {
             {/* Footer */}
             <div className="p-6 bg-slate-50 border-t flex gap-3">
               <button 
+                disabled={actionId === selectedApp._id}
                 onClick={() => updateStatus(selectedApp._id, "rejected")}
-                className="flex-1 py-3 bg-white border text-red-600 font-black text-[10px] uppercase rounded-xl hover:bg-red-50 transition-colors"
+                className="flex-1 py-4 bg-white border text-red-600 font-black text-[10px] uppercase rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
               >
-                Reject Request
+                {actionId === selectedApp._id ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Reject"}
               </button>
               <button 
+                disabled={actionId === selectedApp._id}
                 onClick={() => updateStatus(selectedApp._id, "completed")}
-                className="flex-1 py-3 bg-[#3F2965] text-white font-black text-[10px] uppercase rounded-xl shadow-lg hover:opacity-90 transition-opacity"
+                className="flex-1 py-4 bg-[#3F2965] text-white font-black text-[10px] uppercase rounded-xl shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                Approve & Complete
+                {actionId === selectedApp._id ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Complete"}
               </button>
             </div>
           </div>
@@ -527,7 +578,7 @@ const TimeSlotsView = () => {
       
       {/* --- SUCCESS OVERLAY --- */}
       {showSuccess && (
-        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-[60] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-60 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
           <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 shadow-xl">
             <Check size={40} strokeWidth={3} className="animate-bounce" />
           </div>
@@ -537,7 +588,7 @@ const TimeSlotsView = () => {
 
       {/* --- INTERACTIVE CONFIRMATION MODAL --- */}
       {modalType && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
             <div className="p-8 text-center">
               <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -645,6 +696,17 @@ const AdminDashboard = () => {
     { name: "Time Slots", icon: Clock },
   ];
 
+  useEffect(() => {
+    const syncTabFromHash = () => {
+      const hash = decodeURIComponent(window.location.hash.replace("#", ""));
+      const matched = navItems.find(item => item.name === hash);
+      setActiveTab(matched ? matched.name : "Profile");
+    };
+    syncTabFromHash();
+    window.addEventListener("hashchange", syncTabFromHash);
+    return () => window.removeEventListener("hashchange", syncTabFromHash);
+  }, []);
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       <aside className="w-72 bg-white border-r border-slate-100 flex flex-col p-8">
@@ -655,10 +717,10 @@ const AdminDashboard = () => {
           {navItems.map(item => {
             const Icon = item.icon;
             return (
-              <button key={item.name} onClick={() => setActiveTab(item.name)} 
+              <a key={item.name} href={`#${encodeURIComponent(item.name)}`} onClick={() => setActiveTab(item.name)} 
                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-sm transition-all duration-300 ${activeTab === item.name ? "bg-[#3F2965] text-white shadow-xl translate-x-2" : "text-slate-400 hover:bg-slate-50 hover:text-[#3F2965]"}`}>
                 <Icon size={20} strokeWidth={2.5} /> {item.name}
-              </button>
+              </a>
             )
           })}
         </nav>
