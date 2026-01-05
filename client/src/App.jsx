@@ -10,6 +10,7 @@ import { useAuth } from "./context/AuthContext.jsx";
 import BookingPage from "./pages/BookingPage.jsx";
 import CorporateServices from "./pages/CorporateServices.jsx";
 import UserProfile from "./pages/userProfile.jsx";
+import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 
 // A small component to wrap public pages with the Navbar
 
@@ -18,6 +19,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      { user && <ChatWidget /> }
       <Routes>
         {/* GROUP 1: Public Pages (With Navbar) */}
         <Route path="/" element={<Home />} />
