@@ -274,12 +274,10 @@ const WalletView = ({ user }) => {
                           })}{" "}
                           • {txn.status}
                         </p>
-                        {txn.type === "debit" && txn.referenceId && (
                           <p className="text-[9px] font-bold text-[#3F2965] flex items-center gap-1">
                             <Hash size={10} className="text-[#Dd1764]" />{" "}
-                            Session ID: {txn.referenceId.toUpperCase()}
+                            {txn.type === "debit" ? "Session" :"Transaction"} ID: {txn.referenceId.toUpperCase()}
                           </p>
-                        )}
                       </div>
                     </div>
                   </div>

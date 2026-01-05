@@ -28,6 +28,7 @@ import {
   Calendar,
   Trash2,
   CalendarIcon,
+  AlertCircle
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -497,9 +498,10 @@ const TimeSlotsView = () => {
       const formattedSlots = existingSlots.map(s => typeof s === 'object' ? s.time : s);
       setSlots(formattedSlots.sort());
     } catch (e) {
-      if (e.response?.status === 404) {
-        setSlots([]);
-        setAvailabilityId(null);
+      setSlots([]);
+      setAvailabilityId(null);
+      if (e.response?.status === 400 || e.response?.status === 404) {
+        setErrorMsg(e.response.data?.message);
       } else {
         setErrorMsg("Failed to fetch existing schedule. Please check connection.");
       }
