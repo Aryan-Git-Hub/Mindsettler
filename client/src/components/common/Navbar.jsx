@@ -33,7 +33,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className="fixed top-6 z-50 w-full flex justify-center border">
+    <div className="fixed top-6 z-50 w-full flex justify-center">
       <nav
         className={`w-[90%] flex items-center justify-between px-10 py-4
                     rounded-full transition-all duration-500 ease-in-out
