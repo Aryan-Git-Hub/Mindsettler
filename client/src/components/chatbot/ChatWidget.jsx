@@ -1,89 +1,143 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Loader2, User } from "lucide-react";
+import { 
+  MessageCircle, X, Send, Loader2, 
+  Sparkles, ShieldCheck 
+} from "lucide-react";
+import API from "../../api/axios.js"; // Ensure this ;has withCredentials: true
 
-const ChatWidget = () => {
+const ChatWidget = ({ user }) => {
+  // const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([
-    { role: "bot", content: "Hello! How can I help you today?" }
+  const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState([
+    { 
+      role: "bot", 
+      content: `Hi ${user.name.split(' ')[0]}! I'm your MindSettler companion. How are you feeling today? I'm here to listen or help you book a session if you're ready.` 
+    }
   ]);
+  
   const scrollRef = useRef(null);
 
-  // Auto-scroll to bottom of chat
+  // Auto-scroll to the latest message
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [chatHistory]);
+  }, [history, loading]);
 
-  const handleSendMessage = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || loading) return;
 
-    // Add user message
-    setChatHistory([...chatHistory, { role: "user", content: message }]);
+    const userText = message;
+    setHistory((prev) => [...prev, { role: "user", content: userText }]);
     setMessage("");
+    setLoading(true);
 
-    // Simulate Bot Response
-    setTimeout(() => {
-      setChatHistory(prev => [...prev, { 
-        role: "bot", 
-        content: "Thanks for reaching out! Our team will get back to you soon." 
-      }]);
-    }, 1000);
+    try {
+      // API call to your protected backend route
+      const res = await API.post("/chat", { message: userText });
+      
+      const { intent, reply } = res.data;
+
+      setHistory((prev) => [...prev, { role: "bot", content: reply }]);
+
+      // --- ENCOURAGEMENT & AUTO-REDIRECT LOGIC ---
+      // If the AI detects the user is ready to book, we help them move to the next step
+      if (intent === "BOOK_SESSION") {
+        setTimeout(() => {
+          // This matches the hash-based navigation in your AdminDashboard
+          window.location.hash = "#Time Slots";
+          // Optional: close the widget after a few seconds so they see the dashboard
+          // setIsOpen(false); 
+        }, 3000);
+      }
+
+    } catch (err) {
+      setHistory((prev) => [
+        ...prev, 
+        { role: "bot", content: "I'm having a little trouble connecting to my thoughts. Could you try that again?" }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200] font-sans">
+    <div className="fixed bottom-6 right-6 z-999 font-sans">
       {/* --- CHAT WINDOW --- */}
       {isOpen && (
-        <div className="mb-4 w-80 md:w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+        <div className="mb-4 w-80 md:w-100 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+          
           {/* Header */}
-          <div className="p-5 bg-[#3F2965] text-white flex justify-between items-center">
+          <div className="p-6 bg-[#3F2965] text-white flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                <MessageCircle size={18} />
+              <div className="p-2 bg-white/10 rounded-2xl">
+                <Sparkles size={20} className="text-pink-300" />
               </div>
               <div>
-                <h3 className="text-sm font-black uppercase tracking-widest">MindSettler Support</h3>
-                <p className="text-[10px] text-purple-200 font-bold">Online</p>
+                <h3 className="text-xs font-black uppercase tracking-widest leading-none">MindSettler AI</h3>
+                <div className="flex items-center gap-1 mt-1">
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                  <p className="text-[10px] text-purple-200 font-bold uppercase">Empathetic Guide</p>
+                </div>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-1 rounded-full transition-colors">
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="hover:bg-white/10 p-2 rounded-full transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
 
-          {/* Chat Area */}
+          {/* Chat History */}
           <div 
-            ref={scrollRef}
-            className="h-96 overflow-y-auto p-5 space-y-4 bg-slate-50 custom-scrollbar"
+            ref={scrollRef} 
+            className="h-100 overflow-y-auto p-6 space-y-4 bg-slate-50/50 custom-scrollbar"
           >
-            {chatHistory.map((chat, idx) => (
-              <div key={idx} className={`flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm ${
-                  chat.role === "user" 
-                  ? "bg-[#Dd1764] text-white rounded-tr-none" 
-                  : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
+            {history.map((m, i) => (
+              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] p-4 rounded-3xl text-[13px] font-bold leading-relaxed shadow-sm animate-in zoom-in-95 duration-200 ${
+                  m.role === "user" 
+                    ? "bg-[#Dd1764] text-white rounded-tr-none shadow-[#Dd1764]/20" 
+                    : "bg-white text-slate-700 rounded-tl-none border border-slate-100"
                 }`}>
-                  {chat.content}
+                  {m.content}
                 </div>
               </div>
             ))}
+            
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white p-4 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm">
+                  <Loader2 className="animate-spin text-slate-300" size={18} />
+                </div>
+              </div>
+            )}
+
+            {/* Privacy Badge */}
+            <div className="flex justify-center pt-2">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                <ShieldCheck size={10} />
+                Encrypted & Confidential
+              </div>
+            </div>
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSendMessage} className="p-4 bg-white border-t flex gap-2">
+          <form onSubmit={handleSend} className="p-4 bg-white border-t border-slate-100 flex gap-2 items-center">
             <input 
-              type="text"
-              value={message}
+              value={message} 
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-[#3F2965] outline-none transition-all"
+              placeholder="Type your feelings..."
+              className="flex-1 bg-slate-50 rounded-2xl px-5 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#3F2965] transition-all"
             />
             <button 
-              type="submit"
-              className="p-2 bg-[#3F2965] text-white rounded-xl hover:opacity-90 active:scale-95 transition-all"
+              type="submit" 
+              disabled={loading || !message.trim()}
+              className="p-3 bg-[#3F2965] text-white rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-30"
             >
               <Send size={18} />
             </button>
@@ -91,14 +145,19 @@ const ChatWidget = () => {
         </div>
       )}
 
-      {/* --- FLOATING BUTTON --- */}
+      {/* --- FLOATING TOGGLE BUTTON --- */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 ${
-          isOpen ? "bg-slate-800 rotate-90" : "bg-[#Dd1764]"
+        className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 border-4 border-white ${
+          isOpen ? "bg-slate-800 rotate-90" : "bg-linear-to-tr from-[#3F2965] to-[#Dd1764]"
         }`}
       >
-        {isOpen ? <X size={28} /> : <MessageCircle size={28} />}
+        {isOpen ? <X size={30} /> : <MessageCircle size={30} />}
+        
+        {/* Unread notification dot */}
+        {!isOpen && (
+          <span className="absolute top-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
+        )}
       </button>
     </div>
   );

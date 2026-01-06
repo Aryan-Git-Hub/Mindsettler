@@ -19,7 +19,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      { user && <ChatWidget /> }
+      { user && <ChatWidget user={user} /> }
       <Routes>
         {/* GROUP 1: Public Pages (With Navbar) */}
         <Route path="/" element={<Home />} />

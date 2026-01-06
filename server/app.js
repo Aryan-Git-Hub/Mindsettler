@@ -3,33 +3,59 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import session from "express-session"; // 1. Import session
+import MongoStore from "connect-mongo"; // 2. Import Mongo storage
+import dotenv from "dotenv";
 
+// Routes
+import userRoute from "./routes/userRoute.js";
+import appointnentRoute from "./routes/appointmentRoute.js";
+import adminRoute from "./routes/adminRoute.js";
+import walletTransactionsRoute from './routes/walletRoute.js'
+import chatRoutes from "./routes/chat.routes.js";
+import { protect } from "./middlewares/userMiddleware.js";
+
+dotenv.config();
 const app = express();
+
+// --- SESSION CONFIGURATION (Must be before routes) ---
+// This enables req.session for your chatbot
+app.use(session({
+  secret: process.env.SESSION_SECRET || "mindsettler_secret_key", 
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI, // Uses your MongoDB to save chat state
+    collectionName: "sessions",
+  }),
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    httpOnly: true,
+    sameSite: "lax", // Helps with CORS session sharing
+    maxAge: 24 * 60 * 60 * 1000, // Session expires in 24 hours
+  }
+}));
 
 // Middlewares
 app.use(cors({
   origin: "http://localhost:5173",
-  credentials: true
-})); // Enable Cross-Origin Resource Sharing (CORS).
-app.use(express.json()); // Handles JSON data (like from an API call in React)
-app.use(bodyParser.urlencoded({ extended: true })); // Handles URL-encoded data (like from a standard HTML form)
-app.use(morgan("dev")); // It automatically logs every incoming HTTP request to your terminal console so you can see what is happening in real-time
-app.use(cookieParser()); // This populates req.cookies
+  credentials: true // Crucial: Allows frontend to send session cookies
+}));
 
-// Basic route to check if server is running
-import userRoute from "./routes/userRoute.js";
-import appointnentRoute from "./routes/appointmentRoute.js";
-import adminRoute from "./routes/adminRoute.js";
-import { protect } from "./middlewares/userMiddleware.js";
-import walletTransactionsRoute from './routes/walletRoute.js'
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+app.use(cookieParser());
+
+// Route Registrations
 app.use("/api/user", userRoute);
 app.use("/api/appointment", appointnentRoute);
 app.use("/api/admin", adminRoute);
-// wallet transaction routes
-app.use('/api/transactions', protect, walletTransactionsRoute)
+app.use('/api/transactions', protect, walletTransactionsRoute);
+app.use("/api/chat", protect, chatRoutes); // Chat route now has access to req.session
 
 app.get("/", (req, res) => {
-  res.send("ES Module Backend Running");
+  res.send("ES Module Backend Running with Sessions");
 });
 
 export default app;
