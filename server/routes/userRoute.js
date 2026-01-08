@@ -1,6 +1,6 @@
 import express from "express";
 import { body, validationResult } from "express-validator";
-import { userSignup, login, forgotPassword, getMe, logout } from "../controllers/userController.js";
+import { userSignup, login, forgotPassword, getMe, logout, sendContactEmail } from "../controllers/userController.js";
 import { protect } from "../middlewares/userMiddleware.js";
 
 const router = express.Router();
@@ -54,5 +54,6 @@ router.post(
 router.get("/logout", protect, logout);
 
 router.get("/me", protect, getMe);
+router.post("/contact/send", sendContactEmail);
 
 export default router;

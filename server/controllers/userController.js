@@ -1,7 +1,11 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import Appointment from "../models/appointmentModel.js";
+// Contact email imports
+import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Helper function to create JWT
 const generateToken = (id) => {
@@ -143,5 +147,55 @@ export const logout = async (req, res) => {
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export const sendContactEmail = async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // 1. Read the HTML template file
+    // Adjust the path below to point exactly to your template file
+    const templatePath = path.join(__dirname, "../templates/contactEmail.html");
+    let htmlContent = fs.readFileSync(templatePath, "utf-8");
+
+    // 2. Replace placeholders with actual data
+    htmlContent = htmlContent
+      .replace("{{name}}", name)
+      .replace("{{email}}", email)
+      .replace("{{subject}}", subject || "General Inquiry")
+      .replace("{{message}}", message);
+
+    // 3. Configure Transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.SENDER_PASSWORD, // Use Gmail App Password
+      },
+    });
+
+    // 4. Define Mail Options
+    const mailOptions = {
+      from: `"MindSettler Contact" <${process.env.SENDER_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      replyTo: email, // Direct reply to user
+      subject: `New Message: ${subject}`,
+      html: htmlContent,
+    };
+
+    // 5. Send Email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "Your message has been sent successfully.",
+    });
+  } catch (error) {
+    console.error("❌ Email Error:", error);
+    res.status(500).json({ success: false, message: "Server Error: Could not send email." });
   }
 };

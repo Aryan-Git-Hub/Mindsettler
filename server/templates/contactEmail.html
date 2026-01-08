@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container { max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; background-color: #ffffff; }
+        .header { background-color: #3F2965; padding: 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 22px; letter-spacing: 1px; }
+        .content { padding: 40px; color: #3F2965; line-height: 1.6; }
+        .data-box { background-color: #F5F2ED; padding: 25px; border-radius: 16px; margin-top: 20px; border: 1px solid #efeae2; }
+        .label { font-weight: bold; color: #Dd1764; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+        .value { color: #3F2965; font-size: 15px; margin-bottom: 16px; display: block; }
+        .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+        .accent { background-color: #Dd1764; height: 6px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MindSettler Inquiry</h1>
+        </div>
+        <div class="content">
+            <p>Hello Team,</p>
+            <p>A new message has been submitted through the contact form:</p>
+            
+            <div class="data-box">
+                <span class="label">Sender Name</span>
+                <span class="value">{{name}}</span>
+
+                <span class="label">Email Address</span>
+                <span class="value">{{email}}</span>
+
+                <span class="label">Subject</span>
+                <span class="value">{{subject}}</span>
+
+                <span class="label">Message</span>
+                <span class="value" style="white-space: pre-wrap;">{{message}}</span>
+            </div>
+        </div>
+        <div class="footer">
+            This is an automated notification from the MindSettler website.
+        </div>
+        <div class="accent"></div>
+    </div>
+</body>
+</html>
