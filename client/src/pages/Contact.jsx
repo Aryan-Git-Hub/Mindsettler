@@ -4,6 +4,7 @@ import { Phone, Mail, MessageCircle, Instagram, Send, Loader2, CheckCircle } fro
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import API from "../api/axios"; // Adjust path to your axios instance
+import FAQSection from "../components/common/FAQ";
 
 const ContactPage = () => {
   // State for form and status
@@ -111,6 +112,8 @@ const ContactPage = () => {
           </div>
         </div>
       </div>
+      <div class="h-40 bg-linear-to-b from-[#f9fafc] to-[#fdfcf8]"></div>
+      <FAQSection />
       <Footer />
     </>
   );
