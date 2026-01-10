@@ -11,6 +11,8 @@ import BookingPage from "./pages/BookingPage.jsx";
 import CorporateServices from "./pages/CorporateServices.jsx";
 import UserProfile from "./pages/userProfile.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
+import BlogPage from "./pages/BlogPage.jsx";
+import BlogDetail from "./pages/BlogDetail.jsx";
 
 // A small component to wrap public pages with the Navbar
 
@@ -26,6 +28,8 @@ function App() {
         <Route path="/booking" element={<BookingPage/>}/>
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/corporate" element={<CorporateServices/>}/>
+        <Route path="/blogs" element={<BlogPage/>}/>
+        <Route path="/blog/:id" element={<BlogDetail/>}/>
         {user && user.role==="user" && <Route path="/profile" element={<UserProfile />} />}
         {!user && <Route path="/auth" element={<AuthPage />} />}
         <Route path="/logout" element={<Logout />} />

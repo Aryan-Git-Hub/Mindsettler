@@ -83,18 +83,11 @@ const MindSettlerSection = () => {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button className="group relative px-8 py-4 bg-[#Dd1764] text-white rounded-xl font-bold text-lg shadow-lg hover:bg-[#c01356] transition-all duration-300 overflow-hidden">
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Your Journey <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Book Consultation <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
                 {/* Hover shine effect */}
                 <div className="absolute inset-0 h-full w-full scale-0 rounded-xl transition-all duration-300 group-hover:scale-100 group-hover:bg-[#3F2965]/10"></div>
               </button>
-              
-              <Link to='/booking'>
-              <button className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#3F2965] border-2 border-[#3F2965]/10 rounded-xl font-bold text-lg hover:border-[#3F2965] hover:bg-[#3F2965]/5 transition-all duration-300">
-                <Calendar className="w-5 h-5" />
-                Book Consultation
-              </button>
-              </Link>
             </div>
           </div>
 
