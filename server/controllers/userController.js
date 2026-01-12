@@ -138,7 +138,8 @@ export const logout = async (req, res) => {
       expires: new Date(Date.now()),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      path: "/",
     });
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (error) {

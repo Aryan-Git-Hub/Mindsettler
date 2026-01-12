@@ -1,28 +1,89 @@
+// components/ChatWidget/ChatWidget.jsx
+
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   X,
   Send,
   Sparkles,
   ShieldCheck,
-  ChevronDown,
   Heart,
   GripVertical,
   ArrowDown,
+  ExternalLink,
+  BookOpen,
+  Calendar,
+  MessageCircle,
+  Phone,
+  User,
+  Briefcase,
+  RefreshCw,
+  Smile,
+  Frown,
+  Meh,
+  AlertCircle,
+  Zap,
+  ArrowRight,
+  Coffee,
+  Sun,
+  Moon,
+  CloudSun,
 } from "lucide-react";
 import API from "../../api/axios.js";
 import botAvatar from "../../assets/icons/ChatBotmini-removebg-preview.png";
 
-const chatId = crypto.randomUUID();
+// Generate unique chat ID
+const generateChatId = () => {
+  const saved = sessionStorage.getItem("mindSettlerChatId");
+  if (saved) return saved;
+  const newId = crypto.randomUUID();
+  sessionStorage.setItem("mindSettlerChatId", newId);
+  return newId;
+};
 
-// Quick reply suggestions
-const quickReplies = [
+// Time-based greeting
+const getTimeGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return { text: "Good morning", icon: Sun, emoji: "🌅" };
+  if (hour < 17) return { text: "Good afternoon", icon: CloudSun, emoji: "☀️" };
+  if (hour < 21) return { text: "Good evening", icon: Moon, emoji: "🌆" };
+  return { text: "Good night", icon: Moon, emoji: "🌙" };
+};
+
+// Mood configuration
+const moodConfig = {
+  happy: { icon: Smile, color: "text-green-500", bg: "bg-green-50", border: "border-green-200", label: "Happy" },
+  sad: { icon: Frown, color: "text-blue-500", bg: "bg-blue-50", border: "border-blue-200", label: "Sad" },
+  anxious: { icon: AlertCircle, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200", label: "Anxious" },
+  stressed: { icon: Zap, color: "text-orange-500", bg: "bg-orange-50", border: "border-orange-200", label: "Stressed" },
+  neutral: { icon: Meh, color: "text-slate-500", bg: "bg-slate-50", border: "border-slate-200", label: "Neutral" },
+  hopeful: { icon: Sparkles, color: "text-purple-500", bg: "bg-purple-50", border: "border-purple-200", label: "Hopeful" },
+  calm: { icon: Coffee, color: "text-teal-500", bg: "bg-teal-50", border: "border-teal-200", label: "Calm" },
+};
+
+// Page navigation configuration
+const pageConfig = {
+  "/": { name: "Home", icon: GripVertical, color: "from-slate-600 to-slate-800" },
+  "/booking": { name: "Book Session", icon: Calendar, color: "from-[#3F2965] to-[#DD1764]" },
+  "/blogs": { name: "Read Articles", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
+  "/contact": { name: "Contact Us", icon: Phone, color: "from-blue-500 to-indigo-500" },
+  "/profile": { name: "My Profile", icon: User, color: "from-slate-600 to-slate-800" },
+  "/corporate": { name: "Corporate", icon: Briefcase, color: "from-amber-500 to-orange-500" },
+};
+
+// Default quick replies
+const defaultQuickReplies = [
   { text: "I'm feeling anxious", emoji: "😰" },
   { text: "I need to talk", emoji: "💭" },
   { text: "Book a session", emoji: "📅" },
   { text: "I'm doing okay", emoji: "😊" },
 ];
 
-// Floating particles component
+// ============================================
+// SUB-COMPONENTS
+// ============================================
+
+// Floating particles
 const FloatingParticles = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {[...Array(6)].map((_, i) => (
@@ -40,38 +101,137 @@ const FloatingParticles = () => (
   </div>
 );
 
-// Typing indicator component
+// Typing indicator
 const TypingIndicator = () => (
   <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-    <div className="relative mr-2 mt-1">
-      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-linear-to-br from-[#3F2965] via-[#5a3d8a] to-[#Dd1764] p-0.5 shadow-lg shadow-purple-500/20">
-        <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-          <img src={botAvatar} alt="" className="w-6 h-6 object-contain" />
+    <div className="flex items-end gap-2">
+      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-br from-[#3F2965] via-[#5a3d8a] to-[#DD1764] p-0.5 shadow-lg">
+        <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
+          <img src={botAvatar} alt="" className="w-5 h-5 object-contain" />
         </div>
       </div>
-      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
-    </div>
-    <div className="bg-white/80 backdrop-blur-sm px-5 py-4 rounded-3xl rounded-tl-lg border border-white/50 shadow-lg shadow-slate-200/50">
-      <div className="flex items-center gap-1.5">
-        <div className="flex gap-1">
+      <div className="bg-white/80 backdrop-blur-sm px-4 py-3 rounded-2xl rounded-tl-sm border border-white/50 shadow-lg">
+        <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-2.5 h-2.5 bg-linear-to-r from-[#3F2965] to-[#Dd1764] rounded-full animate-bounce"
+              className="w-2 h-2 bg-gradient-to-r from-[#3F2965] to-[#DD1764] rounded-full animate-bounce"
               style={{ animationDelay: `${i * 150}ms` }}
             />
           ))}
+          <span className="text-[10px] text-slate-400 ml-1">typing...</span>
         </div>
-        <span className="text-[10px] font-medium text-slate-400 ml-2">
-          typing...
-        </span>
       </div>
     </div>
   </div>
 );
 
-// Message bubble component
-const MessageBubble = ({ message, isUser, isLatest }) => {
+// Mood indicator badge
+const MoodBadge = ({ mood }) => {
+  if (!mood || !moodConfig[mood]) return null;
+  const { icon: Icon, color, bg, border, label } = moodConfig[mood];
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${bg} ${border} border rounded-full mt-2`}>
+      <Icon size={12} className={color} />
+      <span className={`text-[10px] font-bold ${color}`}>{label}</span>
+    </div>
+  );
+};
+
+// Quick action buttons
+const QuickActions = ({ buttons, onSelect, isAnimated = true }) => {
+  if (!buttons || buttons.length === 0) return null;
+
+  return (
+    <div className={`flex flex-wrap gap-2 mt-3 ${isAnimated ? "animate-in fade-in slide-in-from-bottom-2 duration-500" : ""}`}>
+      {buttons.map((btn, i) => {
+        const buttonText = typeof btn === "string" ? btn : btn.text;
+        const buttonEmoji = typeof btn === "object" ? btn.emoji : null;
+
+        return (
+          <button
+            key={i}
+            onClick={() => onSelect(buttonText)}
+            style={{ animationDelay: `${i * 100}ms` }}
+            className="group flex items-center gap-1.5 px-3 py-2 
+                       bg-white hover:bg-gradient-to-r hover:from-[#3F2965] hover:to-[#DD1764] 
+                       border border-slate-200 hover:border-transparent 
+                       rounded-full text-xs font-bold text-slate-600 hover:text-white 
+                       shadow-sm hover:shadow-lg 
+                       transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            {buttonEmoji && <span>{buttonEmoji}</span>}
+            <span>{buttonText}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// Resource cards
+const ResourceCards = ({ resources, onNavigate }) => {
+  if (!resources || resources.length === 0) return null;
+
+  return (
+    <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+        <BookOpen size={10} />
+        Suggested Resources
+      </p>
+      <div className="space-y-1.5">
+        {resources.map((resource, i) => (
+          <button
+            key={i}
+            onClick={() => onNavigate(resource.path)}
+            className="w-full flex items-center justify-between p-3 
+                       bg-white/80 hover:bg-gradient-to-r hover:from-[#3F2965]/5 hover:to-[#DD1764]/5
+                       border border-slate-100 hover:border-[#3F2965]/20
+                       rounded-xl text-left transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3F2965]/10 to-[#DD1764]/10 flex items-center justify-center">
+                <BookOpen size={14} className="text-[#DD1764]" />
+              </div>
+              <span className="text-xs font-semibold text-[#3F2965]">{resource.title}</span>
+            </div>
+            <ExternalLink size={12} className="text-slate-300 group-hover:text-[#DD1764] transition-colors" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Navigation button
+const NavigationButton = ({ target, onNavigate, customLabel }) => {
+  if (!target) return null;
+
+  const config = pageConfig[target] || { name: "Go", icon: ExternalLink, color: "from-slate-600 to-slate-800" };
+  const Icon = config.icon;
+
+  return (
+    <button
+      onClick={() => onNavigate(target)}
+      className={`mt-3 w-full flex items-center justify-center gap-2 
+                  py-3 px-4 bg-gradient-to-r ${config.color}
+                  text-white font-bold text-sm rounded-xl 
+                  shadow-lg hover:shadow-xl 
+                  transition-all duration-300 
+                  hover:scale-[1.02] active:scale-[0.98]
+                  animate-in fade-in slide-in-from-bottom-2 duration-500
+                  group`}
+    >
+      <Icon size={16} />
+      <span>{customLabel || config.name}</span>
+      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+    </button>
+  );
+};
+
+// Message bubble
+const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) => {
   const [showReactions, setShowReactions] = useState(false);
 
   return (
@@ -80,11 +240,12 @@ const MessageBubble = ({ message, isUser, isLatest }) => {
         isUser ? "slide-in-from-right-2" : "slide-in-from-left-2"
       } duration-300`}
     >
+      {/* Bot Avatar */}
       {!isUser && (
         <div className="relative mr-2 mt-1 shrink-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-linear-to-br from-[#3F2965] via-[#5a3d8a] to-[#Dd1764] p-0.5 shadow-lg shadow-purple-500/20 transition-transform group-hover:scale-105">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-br from-[#3F2965] via-[#5a3d8a] to-[#DD1764] p-0.5 shadow-lg transition-transform group-hover:scale-105">
             <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-              <img src={botAvatar} alt="" className="w-6 h-6 object-contain" />
+              <img src={botAvatar} alt="" className="w-5 h-5 object-contain" />
             </div>
           </div>
           {isLatest && (
@@ -93,42 +254,48 @@ const MessageBubble = ({ message, isUser, isLatest }) => {
         </div>
       )}
 
-      <div className="relative max-w-[75%] sm:max-w-[80%]">
+      <div className={`max-w-[80%] ${!isUser ? "space-y-1" : ""}`}>
+        {/* Message Content */}
         <div
           className={`
-            relative p-4 sm:p-5 text-[13px] sm:text-sm font-medium leading-relaxed
+            relative p-4 text-[13px] sm:text-sm font-medium leading-relaxed shadow-lg
             transition-all duration-300 group-hover:shadow-xl
-            ${
-              isUser
-                ? `bg-linear-to-br from-[#Dd1764] via-[#e83d7f] to-[#ff6b9d] text-white 
-                   rounded-3xl rounded-tr-lg shadow-lg shadow-pink-500/25
-                   hover:shadow-pink-500/40`
-                : `bg-white/80 backdrop-blur-sm text-slate-700 
-                   rounded-3xl rounded-tl-lg border border-white/50 
-                   shadow-lg shadow-slate-200/50 hover:bg-white`
+            ${isUser
+              ? "bg-gradient-to-br from-[#DD1764] via-[#e83d7f] to-[#ff6b9d] text-white rounded-2xl rounded-tr-sm"
+              : "bg-white/80 backdrop-blur-sm text-slate-700 rounded-2xl rounded-tl-sm border border-white/50"
             }
           `}
         >
           {!isUser && (
-            <div className="absolute inset-0 rounded-3xl rounded-tl-lg bg-linear-to-br from-purple-50/50 to-pink-50/50 pointer-events-none" />
+            <div className="absolute inset-0 rounded-2xl rounded-tl-sm bg-gradient-to-br from-purple-50/30 to-pink-50/30 pointer-events-none" />
           )}
           <span className="relative z-10">{message.content}</span>
-          <div
-            className={`absolute top-3 w-3 h-3 transform rotate-45 ${
-              isUser
-                ? "-right-1 bg-linear-to-br from-[#Dd1764] to-[#e83d7f]"
-                : "-left-1 bg-white/80 border-l border-t border-white/50"
-            }`}
-          />
         </div>
 
-        <div
-          className={`flex items-center gap-2 mt-1.5 ${
-            isUser ? "justify-end" : "justify-start"
-          }`}
-        >
-          <span className="text-[9px] sm:text-[10px] font-medium text-slate-300">
-            {new Date().toLocaleTimeString([], {
+        {/* Mood Badge */}
+        {!isUser && message.mood_detected && (
+          <MoodBadge mood={message.mood_detected} />
+        )}
+
+        {/* Quick Action Buttons */}
+        {!isUser && message.action?.buttons && (
+          <QuickActions buttons={message.action.buttons} onSelect={onQuickReply} />
+        )}
+
+        {/* Resource Cards */}
+        {!isUser && message.action?.resources && (
+          <ResourceCards resources={message.action.resources} onNavigate={onNavigate} />
+        )}
+
+        {/* Navigation Button */}
+        {!isUser && message.action?.type === "navigate" && message.action?.target && (
+          <NavigationButton target={message.action.target} onNavigate={onNavigate} />
+        )}
+
+        {/* Timestamp & Reactions */}
+        <div className={`flex items-center gap-2 mt-1.5 ${isUser ? "justify-end" : "justify-start"}`}>
+          <span className="text-[9px] text-slate-300">
+            {new Date(message.timestamp || Date.now()).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -143,8 +310,9 @@ const MessageBubble = ({ message, isUser, isLatest }) => {
           )}
         </div>
 
+        {/* Reactions popup */}
         {showReactions && !isUser && (
-          <div className="absolute -bottom-8 left-0 flex gap-1 p-1.5 bg-white rounded-full shadow-xl border animate-in zoom-in-95 duration-200">
+          <div className="absolute -bottom-8 left-0 flex gap-1 p-1.5 bg-white rounded-full shadow-xl border z-10 animate-in zoom-in-95 duration-200">
             {["❤️", "👍", "😊", "🙏"].map((emoji) => (
               <button
                 key={emoji}
@@ -158,11 +326,10 @@ const MessageBubble = ({ message, isUser, isLatest }) => {
         )}
       </div>
 
+      {/* User Avatar */}
       {isUser && (
-        <div className="relative ml-2 mt-1 shrink-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-            {message.userName?.charAt(0) || "U"}
-          </div>
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-sm shadow-lg ml-2 mt-1 shrink-0">
+          {message.userName?.charAt(0) || "U"}
         </div>
       )}
     </div>
@@ -170,7 +337,7 @@ const MessageBubble = ({ message, isUser, isLatest }) => {
 };
 
 // ============================================
-// DRAGGABLE BUTTON HOOK
+// DRAGGABLE HOOK
 // ============================================
 const useDraggable = (initialPosition = null) => {
   const [position, setPosition] = useState(() => {
@@ -188,7 +355,6 @@ const useDraggable = (initialPosition = null) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
-
   const buttonRef = useRef(null);
 
   useEffect(() => {
@@ -200,37 +366,26 @@ const useDraggable = (initialPosition = null) => {
   const constrainPosition = useCallback((x, y) => {
     const buttonSize = 64;
     const padding = 16;
-    const maxX = window.innerWidth - buttonSize - padding;
-    const maxY = window.innerHeight - buttonSize - padding;
-
     return {
-      x: Math.max(padding, Math.min(x, maxX)),
-      y: Math.max(padding, Math.min(y, maxY)),
+      x: Math.max(padding, Math.min(x, window.innerWidth - buttonSize - padding)),
+      y: Math.max(padding, Math.min(y, window.innerHeight - buttonSize - padding)),
     };
   }, []);
 
   const handleDragStart = useCallback((clientX, clientY) => {
     setIsDragging(true);
     setHasMoved(false);
-
     const button = buttonRef.current;
     if (button) {
       const rect = button.getBoundingClientRect();
-      setDragStart({
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-      });
+      setDragStart({ x: clientX - rect.left, y: clientY - rect.top });
     }
   }, []);
 
   const handleDragMove = useCallback(
     (clientX, clientY) => {
       if (!isDragging) return;
-
-      const newX = clientX - dragStart.x;
-      const newY = clientY - dragStart.y;
-
-      const constrained = constrainPosition(newX, newY);
+      const constrained = constrainPosition(clientX - dragStart.x, clientY - dragStart.y);
       setPosition(constrained);
       setHasMoved(true);
     },
@@ -239,83 +394,47 @@ const useDraggable = (initialPosition = null) => {
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
-
     if (position) {
-      const screenWidth = window.innerWidth;
-      const buttonSize = 64;
-      const padding = 16;
-      const snapToLeft = position.x < screenWidth / 2;
-      const snappedX = snapToLeft ? padding : screenWidth - buttonSize - padding;
-
-      setPosition((prev) => ({
-        ...prev,
-        x: snappedX,
-      }));
+      const snapToLeft = position.x < window.innerWidth / 2;
+      const snappedX = snapToLeft ? 16 : window.innerWidth - 64 - 16;
+      setPosition((prev) => ({ ...prev, x: snappedX }));
     }
   }, [position]);
 
-  const handleMouseDown = useCallback(
-    (e) => {
-      e.preventDefault();
-      handleDragStart(e.clientX, e.clientY);
-    },
-    [handleDragStart]
-  );
+  const handleMouseDown = useCallback((e) => {
+    e.preventDefault();
+    handleDragStart(e.clientX, e.clientY);
+  }, [handleDragStart]);
 
-  const handleMouseMove = useCallback(
-    (e) => {
-      handleDragMove(e.clientX, e.clientY);
-    },
-    [handleDragMove]
-  );
-
-  const handleMouseUp = useCallback(() => {
-    handleDragEnd();
-  }, [handleDragEnd]);
-
-  const handleTouchStart = useCallback(
-    (e) => {
-      const touch = e.touches[0];
-      handleDragStart(touch.clientX, touch.clientY);
-    },
-    [handleDragStart]
-  );
-
-  const handleTouchMove = useCallback(
-    (e) => {
-      const touch = e.touches[0];
-      handleDragMove(touch.clientX, touch.clientY);
-    },
-    [handleDragMove]
-  );
-
-  const handleTouchEnd = useCallback(() => {
-    handleDragEnd();
-  }, [handleDragEnd]);
+  const handleTouchStart = useCallback((e) => {
+    const touch = e.touches[0];
+    handleDragStart(touch.clientX, touch.clientY);
+  }, [handleDragStart]);
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-      window.addEventListener("touchmove", handleTouchMove, { passive: false });
-      window.addEventListener("touchend", handleTouchEnd);
+    if (!isDragging) return;
 
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-        window.removeEventListener("touchmove", handleTouchMove);
-        window.removeEventListener("touchend", handleTouchEnd);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
+    const handleMouseMove = (e) => handleDragMove(e.clientX, e.clientY);
+    const handleTouchMove = (e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    const handleEnd = () => handleDragEnd();
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleEnd);
+    };
+  }, [isDragging, handleDragMove, handleDragEnd]);
 
   useEffect(() => {
     const handleResize = () => {
-      if (position) {
-        setPosition(constrainPosition(position.x, position.y));
-      }
+      if (position) setPosition(constrainPosition(position.x, position.y));
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [position, constrainPosition]);
@@ -325,111 +444,169 @@ const useDraggable = (initialPosition = null) => {
     localStorage.removeItem("chatWidgetPosition");
   }, []);
 
-  return {
-    position,
-    isDragging,
-    hasMoved,
-    buttonRef,
-    handleMouseDown,
-    handleTouchStart,
-    resetPosition,
-  };
+  return { position, isDragging, hasMoved, buttonRef, handleMouseDown, handleTouchStart, resetPosition };
 };
 
 // ============================================
-// MAIN CHAT WIDGET COMPONENT
+// MAIN CHAT WIDGET
 // ============================================
 const ChatWidget = ({ user }) => {
+  const navigate = useNavigate();
+  const chatId = useRef(generateChatId()).current;
+  
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
+  const [currentMood, setCurrentMood] = useState(null);
+  const [messageCount, setMessageCount] = useState(0);
+
+  const greeting = getTimeGreeting();
+  const userName = user?.name?.split(" ")[0] || "there";
+
   const [history, setHistory] = useState([
     {
       role: "bot",
-      content: `Hey ${
-        user?.name?.split(" ")[0] || "there"
-      }! ✨ I'm your MindSettler companion. How are you feeling today? I'm here to listen, support, or help you book a healing session.`,
+      content: `${greeting.emoji} ${greeting.text}, ${userName}! I'm your MindSettler companion. How are you feeling today?`,
+      timestamp: new Date().toISOString(),
+      action: {
+        type: "quick_replies",
+        buttons: defaultQuickReplies,
+      },
     },
   ]);
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  const {
-    position,
-    isDragging,
-    hasMoved,
-    buttonRef,
-    handleMouseDown,
-    handleTouchStart,
-    resetPosition,
-  } = useDraggable();
+  const { position, isDragging, hasMoved, buttonRef, handleMouseDown, handleTouchStart, resetPosition } = useDraggable();
 
+  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [history, loading]);
 
+  // Lock body scroll on mobile
   useEffect(() => {
     if (isOpen && window.innerWidth < 768) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
+  // Focus input
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [isOpen]);
 
+  // Hide notification
   useEffect(() => {
     const timer = setTimeout(() => setShowNotification(false), 8000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle close chat
-  const handleClose = useCallback(() => {
+  // Handle navigation
+  const handleNavigate = useCallback((path) => {
     setIsOpen(false);
+    setTimeout(() => navigate(path), 300);
+  }, [navigate]);
+
+  // Handle close
+  const handleClose = useCallback(() => setIsOpen(false), []);
+
+  // Handle quick reply
+  const handleQuickReply = useCallback((text) => {
+    handleSend(text);
   }, []);
 
+  // Clear chat
+  const handleClearChat = useCallback(async () => {
+    try {
+      await API.delete(`/chat/clear/${chatId}`);
+    } catch (err) {
+      console.log("Clear chat error (non-critical):", err);
+    }
+    
+    setHistory([{
+      role: "bot",
+      content: `✨ Fresh start, ${userName}! What would you like to talk about?`,
+      timestamp: new Date().toISOString(),
+      action: { type: "quick_replies", buttons: defaultQuickReplies },
+    }]);
+    setCurrentMood(null);
+    setMessageCount(0);
+  }, [chatId, userName]);
+
+  // Send message
   const handleSend = async (text = message) => {
     if (!text.trim() || loading) return;
 
-    const userText = text;
-    setHistory((prev) => [
-      ...prev,
-      { role: "user", content: userText, userName: user?.name },
-    ]);
+    const userMessage = {
+      role: "user",
+      content: text.trim(),
+      userName: user?.name,
+      timestamp: new Date().toISOString(),
+    };
+
+    setHistory((prev) => [...prev, userMessage]);
     setMessage("");
     setLoading(true);
+    setMessageCount((prev) => prev + 1);
 
     try {
-      const res = await API.post("/chat", { message: userText, chatId });
-      const { intent, reply } = res.data;
-      setHistory((prev) => [...prev, { role: "bot", content: reply }]);
+      const res = await API.post("/chat", { message: text.trim(), chatId });
+      const { intent, reply, action, mood_detected, follow_up_suggestion } = res.data;
 
-      if (intent === "BOOK_SESSION") {
-        setTimeout(() => {
-          window.location.hash = "#Time Slots";
-        }, 3000);
+      // Build bot message
+      const botMessage = {
+        role: "bot",
+        content: reply,
+        timestamp: new Date().toISOString(),
+        action: action || { type: "none" },
+        mood_detected: mood_detected,
+        intent: intent,
+      };
+
+      // Add default quick replies if none provided and not navigating
+      if (!action?.buttons && action?.type !== "navigate") {
+        botMessage.action = {
+          ...botMessage.action,
+          buttons: intent === "EMOTIONAL_SUPPORT" 
+            ? ["Tell me more", "Book a session", "Show resources"]
+            : null,
+        };
       }
+
+      setHistory((prev) => [...prev, botMessage]);
+
+      // Update mood
+      if (mood_detected) setCurrentMood(mood_detected);
+
+      // Handle navigation intents
+      const navigationIntents = ["BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_BLOGS", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE"];
+      
+      if (navigationIntents.includes(intent) && action?.target) {
+        // Auto-navigate after delay for booking
+        if (intent === "BOOK_SESSION") {
+          setTimeout(() => handleNavigate(action.target), 2500);
+        }
+      }
+
     } catch (err) {
+      console.error("Chat error:", err);
       setHistory((prev) => [
         ...prev,
         {
           role: "bot",
-          content:
-            "I'm having a moment... 🌸 Could you try that again? I want to hear what you have to say.",
+          content: "I'm having a moment... 🌸 Could you try that again?",
+          timestamp: new Date().toISOString(),
+          action: { type: "quick_replies", buttons: ["Try again", "Book a session"] },
         },
       ]);
     } finally {
@@ -437,10 +614,7 @@ const ChatWidget = ({ user }) => {
     }
   };
 
-  const handleQuickReply = (text) => {
-    handleSend(text);
-  };
-
+  // Button click handler
   const handleButtonClick = () => {
     if (!hasMoved) {
       setIsOpen(!isOpen);
@@ -448,19 +622,10 @@ const ChatWidget = ({ user }) => {
     }
   };
 
+  // Position styles
   const buttonPositionStyles = position
-    ? {
-        position: "fixed",
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        right: "auto",
-        bottom: "auto",
-      }
-    : {
-        position: "fixed",
-        right: "16px",
-        bottom: "16px",
-      };
+    ? { position: "fixed", left: `${position.x}px`, top: `${position.y}px`, right: "auto", bottom: "auto" }
+    : { position: "fixed", right: "16px", bottom: "16px" };
 
   const getNotificationPosition = () => {
     if (position) {
@@ -472,11 +637,7 @@ const ChatWidget = ({ user }) => {
         top: `${position.y - 10}px`,
       };
     }
-    return {
-      position: "fixed",
-      right: "24px",
-      bottom: "96px",
-    };
+    return { position: "fixed", right: "24px", bottom: "96px" };
   };
 
   return (
@@ -484,44 +645,28 @@ const ChatWidget = ({ user }) => {
       {/* === CHAT WINDOW === */}
       {isOpen && (
         <>
-          {/* Mobile overlay - tapping closes chat */}
+          {/* Mobile overlay */}
           <div
-            className="md:hidden fixed inset-0 bg-linear-to-b from-[#3F2965]/30 to-[#Dd1764]/20 backdrop-blur-md z-40 animate-in fade-in duration-300"
+            className="md:hidden fixed inset-0 bg-gradient-to-b from-[#3F2965]/30 to-[#DD1764]/20 backdrop-blur-md z-40 animate-in fade-in duration-300"
             onClick={handleClose}
           />
 
           {/* Chat Container */}
-          <div
-            className={`
-              fixed z-50 flex flex-col overflow-hidden
-              animate-in duration-500 ease-out
-              inset-0 rounded-none
-              md:inset-auto md:bottom-24 md:right-6
-              md:w-95 lg:w-105
-              md:h-145 lg:h-155
-              md:rounded-4xl
-              bg-linear-to-b from-white/95 to-white/90 backdrop-blur-xl
-              md:shadow-2xl md:shadow-purple-500/10
-              md:border md:border-white/50
-              slide-in-from-bottom-10 md:slide-in-from-bottom-5
-            `}
-          >
+          <div className="fixed z-50 inset-0 md:inset-auto md:bottom-24 md:right-6 md:w-[380px] lg:w-[420px] md:h-[580px] lg:h-[620px] md:rounded-3xl bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl md:shadow-2xl md:border md:border-white/50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-500">
+            
             {/* === HEADER === */}
             <div className="shrink-0 relative overflow-hidden">
-              <div className="absolute inset-0 bg-linear-to-r from-[#3F2965] via-[#5a3d8a] to-[#Dd1764]" />
-              <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/10" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#3F2965] via-[#5a3d8a] to-[#DD1764]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10" />
               <FloatingParticles />
 
-              <div className="relative px-4 py-4 sm:px-5 sm:py-5 flex justify-between items-center safe-area-top">
+              <div className="relative px-4 py-4 flex justify-between items-center safe-area-top">
                 <div className="flex items-center gap-3">
+                  {/* Avatar */}
                   <div className="relative">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-sm p-0.5 shadow-xl shadow-black/10 animate-pulse-slow">
+                    <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm p-0.5 shadow-xl">
                       <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-                        <img
-                          src={botAvatar}
-                          alt="MindSettler AI"
-                          className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                        />
+                        <img src={botAvatar} alt="MindSettler" className="w-10 h-10 object-contain" />
                       </div>
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white shadow-lg">
@@ -529,91 +674,89 @@ const ChatWidget = ({ user }) => {
                     </div>
                   </div>
 
+                  {/* Title */}
                   <div className="text-white">
-                    <h3 className="text-sm sm:text-base font-black tracking-tight flex items-center gap-2">
+                    <h3 className="text-sm font-bold flex items-center gap-2">
                       MindSettler
-                      <Sparkles size={14} className="text-yellow-300 animate-pulse" />
+                      <Sparkles size={12} className="text-yellow-300 animate-pulse" />
                     </h3>
-                    <p className="text-[10px] sm:text-xs text-white/70 font-medium">
-                      Your empathetic AI companion
-                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-white/70">
+                      <span>Online</span>
+                      {currentMood && (
+                        <>
+                          <span>•</span>
+                          <span className="capitalize">{currentMood}</span>
+                        </>
+                      )}
+                      {messageCount > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>{messageCount} msgs</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* === FIXED: CLOSE BUTTON === */}
-                <button
-                  onClick={handleClose}
-                  className="
-                    flex items-center gap-2 
-                    px-4 py-2.5 sm:px-4 sm:py-2
-                    bg-white/20 hover:bg-white/30 
-                    active:bg-white/40 active:scale-95
-                    backdrop-blur-sm rounded-xl sm:rounded-xl 
-                    transition-all duration-200 
-                    text-white 
-                    touch-manipulation
-                    min-h-11 min-w-11
-                    justify-center
-                  "
-                  aria-label="Close chat"
-                >
-                  {/* Mobile: Text + Icon */}
-                  <span className="text-xs font-bold uppercase tracking-wide md:hidden">
-                    Close
-                  </span>
-                  <X size={20} className="md:w-5 md:h-5" strokeWidth={2.5} />
-                </button>
+                {/* Header Actions */}
+                <div className="flex items-center gap-2">
+                  {/* Clear Chat */}
+                  <button
+                    onClick={handleClearChat}
+                    className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                    title="Clear chat"
+                  >
+                    <RefreshCw size={16} className="text-white/70" />
+                  </button>
+
+                  {/* Close Button */}
+                  <button
+                    onClick={handleClose}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 active:scale-95 rounded-xl transition-all text-white min-h-[44px]"
+                  >
+                    <span className="text-xs font-bold md:hidden">Close</span>
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
-              <svg
-                className="absolute -bottom-1 left-0 w-full h-6 text-white/95"
-                viewBox="0 0 1200 120"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
-                  fill="currentColor"
-                />
+              {/* Wave decoration */}
+              <svg className="absolute -bottom-1 left-0 w-full h-6 text-white/95" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="currentColor" />
               </svg>
             </div>
 
             {/* === CHAT HISTORY === */}
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 space-y-4 custom-scrollbar"
-            >
-              {history.map((m, i) => (
+            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 custom-scrollbar">
+              {history.map((msg, i) => (
                 <MessageBubble
                   key={i}
-                  message={m}
-                  isUser={m.role === "user"}
-                  isLatest={i === history.length - 1 && m.role === "bot"}
+                  message={msg}
+                  isUser={msg.role === "user"}
+                  isLatest={i === history.length - 1 && msg.role === "bot"}
+                  onNavigate={handleNavigate}
+                  onQuickReply={handleQuickReply}
                 />
               ))}
 
               {loading && <TypingIndicator />}
 
-              {!loading && history[history.length - 1]?.role === "bot" && (
-                <div className="flex flex-wrap gap-2 pt-2 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-300">
-                  {quickReplies.map((reply, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleQuickReply(reply.text)}
-                      className="group flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-linear-to-r hover:from-[#3F2965] hover:to-[#Dd1764] border border-slate-200 hover:border-transparent rounded-full text-xs font-bold text-slate-600 hover:text-white shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
-                    >
-                      <span>{reply.emoji}</span>
-                      <span>{reply.text}</span>
-                    </button>
-                  ))}
-                </div>
+              {/* Show default quick replies after bot message if none provided */}
+              {!loading && 
+               history.length > 0 && 
+               history[history.length - 1]?.role === "bot" && 
+               !history[history.length - 1]?.action?.buttons && 
+               history[history.length - 1]?.action?.type !== "navigate" && (
+                <QuickActions buttons={defaultQuickReplies} onSelect={handleQuickReply} />
               )}
 
+              {/* Privacy Badge */}
               <div className="flex justify-center pt-4 pb-2">
-                <div className="flex items-center gap-1.5 px-4 py-2 bg-linear-to-r from-slate-50 to-slate-100 rounded-full border border-slate-200/50">
-                  <div className="w-5 h-5 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/20">
+                <div className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-full border border-slate-200/50">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/20">
                     <ShieldCheck size={10} className="text-white" />
                   </div>
-                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                     End-to-End Encrypted
                   </span>
                 </div>
@@ -621,99 +764,58 @@ const ChatWidget = ({ user }) => {
             </div>
 
             {/* === INPUT AREA === */}
-            <div className="shrink-0 p-3 sm:p-4 bg-white/80 backdrop-blur-sm border-t border-slate-100/50 safe-area-bottom">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSend();
-                }}
-                className="flex gap-2 sm:gap-3 items-end"
-              >
-                <div className="flex-1 relative">
-                  <input
-                    ref={inputRef}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Share what's on your mind..."
-                    className="w-full bg-slate-50/80 hover:bg-slate-50 focus:bg-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium outline-none ring-2 ring-transparent focus:ring-[#3F2965]/20 border border-slate-200/50 focus:border-[#3F2965]/30 transition-all placeholder:text-slate-300"
-                  />
-                </div>
-
+            <div className="shrink-0 p-4 bg-white/80 backdrop-blur-sm border-t border-slate-100/50 safe-area-bottom">
+              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2 items-end">
+                <input
+                  ref={inputRef}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Share what's on your mind..."
+                  className="flex-1 bg-slate-50/80 hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-[#3F2965]/20 border border-slate-200/50 focus:border-[#3F2965]/30 transition-all placeholder:text-slate-300"
+                />
                 <button
                   type="submit"
                   disabled={loading || !message.trim()}
-                  className={`
-                    relative p-3.5 sm:p-4 rounded-2xl font-bold
-                    transition-all duration-300 transform
-                    disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed
-                    min-h-12 min-w-12
-                    flex items-center justify-center
-                    ${
-                      message.trim()
-                        ? "bg-linear-to-r from-[#3F2965] to-[#Dd1764] text-white shadow-xl shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 active:scale-95"
-                        : "bg-slate-100 text-slate-300"
-                    }
-                  `}
+                  className={`p-3 rounded-xl transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center ${
+                    message.trim()
+                      ? "bg-gradient-to-r from-[#3F2965] to-[#DD1764] text-white shadow-lg hover:shadow-xl active:scale-95"
+                      : "bg-slate-100 text-slate-300"
+                  }`}
                 >
-                  <Send size={20} className="relative z-10" />
+                  <Send size={18} />
                 </button>
               </form>
 
-              <div className="flex items-center justify-center gap-4 mt-2 sm:mt-3">
-                <span className="text-[9px] text-slate-300 font-medium">
-                  Press Enter to send
-                </span>
+              <div className="flex justify-center gap-3 mt-2">
+                <span className="text-[9px] text-slate-300">Enter to send</span>
                 <span className="text-slate-200">•</span>
-                <span className="text-[9px] text-slate-300 font-medium flex items-center gap-1">
+                <span className="text-[9px] text-slate-300 flex items-center gap-1">
                   <Heart size={8} className="text-pink-400" />
                   Be kind to yourself
                 </span>
               </div>
             </div>
 
-            {/* === MOBILE FLOATING CLOSE BUTTON (Bottom) === */}
+            {/* Mobile Close Button */}
             <button
               onClick={handleClose}
-              className="
-                md:hidden
-                fixed top-25 left-1/2 -translate-x-1/2 z-60
-                flex items-center gap-2
-                px-6 py-3
-                bg-slate-900/90 hover:bg-slate-800
-                active:bg-slate-700 active:scale-95
-                backdrop-blur-xl
-                rounded-full
-                text-white
-                shadow-2xl shadow-black/30
-                transition-all duration-300
-                animate-in slide-in-from-bottom-5 fade-in
-                delay-500
-                touch-manipulation
-                border border-white/10
-              "
-              aria-label="Close chat"
+              className="md:hidden fixed top-24 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 px-5 py-2.5 bg-slate-900/90 backdrop-blur-xl rounded-full text-white shadow-2xl border border-white/10 animate-in slide-in-from-top-5 duration-500"
             >
-              <ArrowDown size={18} className="animate-bounce" />
-              <span className="text-sm font-bold">Tap to Close</span>
+              <ArrowDown size={16} className="animate-bounce" />
+              <span className="text-sm font-bold">Close Chat</span>
             </button>
           </div>
         </>
       )}
 
-      {/* === DRAGGABLE FLOATING BUTTON === */}
+      {/* === FLOATING BUTTON === */}
       <div
         ref={buttonRef}
         style={buttonPositionStyles}
-        className={`z-60 touch-none ${
-          isOpen ? "scale-0 md:scale-100 pointer-events-none md:pointer-events-auto" : "scale-100"
-        } transition-transform duration-300`}
+        className={`z-[60] touch-none ${isOpen ? "scale-0 md:scale-100 pointer-events-none md:pointer-events-auto" : "scale-100"} transition-transform duration-300`}
       >
-        {/* Drag handle indicator */}
-        <div
-          className={`absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1 bg-slate-800/80 backdrop-blur-sm text-white text-[9px] font-bold rounded-full transition-all duration-300 ${
-            isDragging ? "opacity-100 scale-100" : "opacity-0 scale-90"
-          }`}
-        >
+        {/* Drag indicator */}
+        <div className={`absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1 bg-slate-800/80 backdrop-blur-sm text-white text-[9px] font-bold rounded-full transition-all duration-300 ${isDragging ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}>
           <GripVertical size={10} />
           <span>Dragging</span>
         </div>
@@ -721,11 +823,8 @@ const ChatWidget = ({ user }) => {
         {/* Pulsing rings */}
         {!isOpen && !isDragging && (
           <>
-            <div className="absolute inset-0 rounded-full bg-linear-to-r from-[#3F2965] to-[#Dd1764] animate-ping opacity-20" />
-            <div
-              className="absolute inset-0 rounded-full bg-linear-to-r from-[#3F2965] to-[#Dd1764] animate-ping opacity-10"
-              style={{ animationDelay: "0.5s" }}
-            />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#3F2965] to-[#DD1764] animate-ping opacity-20" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#3F2965] to-[#DD1764] animate-ping opacity-10" style={{ animationDelay: "0.5s" }} />
           </>
         )}
 
@@ -734,96 +833,68 @@ const ChatWidget = ({ user }) => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={handleButtonClick}
-          className={`
-            relative w-14 h-14 sm:w-16 sm:h-16 rounded-full 
-            flex items-center justify-center
-            shadow-2xl transition-all duration-300
-            border-4 border-white select-none
-            ${isDragging ? "cursor-grabbing scale-110" : "cursor-grab"}
-            ${
-              isOpen
-                ? "bg-slate-800 rotate-180"
-                : "bg-linear-to-br from-[#3F2965] via-[#5a3d8a] to-[#Dd1764] hover:shadow-purple-500/50"
-            }
-            ${!isDragging && !isOpen ? "hover:scale-110 active:scale-95" : ""}
-          `}
-          style={{
-            touchAction: "none",
-          }}
+          className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-white select-none transition-all duration-300 ${
+            isDragging ? "cursor-grabbing scale-110" : "cursor-grab"
+          } ${isOpen ? "bg-slate-800 rotate-180" : "bg-gradient-to-br from-[#3F2965] via-[#5a3d8a] to-[#DD1764] hover:shadow-purple-500/50"} ${
+            !isDragging && !isOpen ? "hover:scale-110 active:scale-95" : ""
+          }`}
+          style={{ touchAction: "none" }}
         >
-          {isDragging && (
-            <div className="absolute inset-0 rounded-full border-4 border-white/50 border-dashed animate-spin-slow" />
-          )}
-
+          {isDragging && <div className="absolute inset-0 rounded-full border-4 border-white/50 border-dashed animate-spin" style={{ animationDuration: "3s" }} />}
+          
           {isOpen ? (
-            <X size={26} className="text-white" />
+            <X size={24} className="text-white" />
           ) : (
-            <img
-              src={botAvatar}
-              alt="MindSettler"
-              className={`w-full h-full object-cover transition-transform duration-300 ${
-                isDragging ? "scale-90" : "scale-110 hover:scale-125"
-              }`}
-              draggable={false}
-            />
+            <img src={botAvatar} alt="Chat" className={`w-full h-full object-cover transition-transform duration-300 ${isDragging ? "scale-90" : "scale-110"}`} draggable={false} />
           )}
 
+          {/* Online indicator */}
           {!isOpen && (
-            <div
-              className={`absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-[3px] border-white shadow-lg flex items-center justify-center transition-transform ${
-                isDragging ? "scale-0" : "scale-100"
-              }`}
-            >
+            <div className={`absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-[3px] border-white shadow-lg flex items-center justify-center transition-transform ${isDragging ? "scale-0" : "scale-100"}`}>
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+            </div>
+          )}
+
+          {/* Message count badge */}
+          {!isOpen && messageCount > 0 && (
+            <div className={`absolute -bottom-1 -left-1 min-w-[20px] h-5 px-1.5 bg-[#DD1764] rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform ${isDragging ? "scale-0" : "scale-100"}`}>
+              <span className="text-[10px] font-bold text-white">{messageCount > 99 ? "99+" : messageCount}</span>
             </div>
           )}
         </button>
 
+        {/* Reset position button */}
         {position && !isOpen && !isDragging && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              resetPosition();
-            }}
-            className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800/80 backdrop-blur-sm text-white text-[9px] font-bold rounded-full hover:bg-slate-700 transition-all animate-in fade-in slide-in-from-top-2"
+            onClick={(e) => { e.stopPropagation(); resetPosition(); }}
+            className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800/80 backdrop-blur-sm text-white text-[9px] font-bold rounded-full hover:bg-slate-700 transition-all animate-in fade-in"
           >
-            Reset Position
+            Reset
           </button>
         )}
       </div>
 
       {/* === NOTIFICATION BUBBLE === */}
       {!isOpen && showNotification && !isDragging && (
-        <div
-          style={getNotificationPosition()}
-          className="z-59 animate-in fade-in slide-in-from-right-5 duration-700 delay-1000"
-        >
-          <div className="relative max-w-55 sm:max-w-60">
+        <div style={getNotificationPosition()} className="z-[59] animate-in fade-in slide-in-from-right-5 duration-700 delay-1000">
+          <div className="relative max-w-[220px]">
             <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-shadow">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#3F2965] to-[#Dd1764]" />
-
-              <button
-                onClick={() => setShowNotification(false)}
-                className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-              >
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] to-[#DD1764]" />
+              
+              <button onClick={() => setShowNotification(false)} className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full transition-colors opacity-0 group-hover:opacity-100">
                 <X size={12} className="text-slate-400" />
               </button>
 
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#3F2965] to-[#Dd1764] flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/20">
-                  <Sparkles size={18} className="text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3F2965] to-[#DD1764] flex items-center justify-center shrink-0 shadow-lg">
+                  <MessageCircle size={18} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-700 leading-snug">
-                    Need someone to talk to? 💜
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Hold & drag me anywhere!
-                  </p>
+                  <p className="text-xs font-bold text-slate-700">Need someone to talk to? 💜</p>
+                  <p className="text-[10px] text-slate-400 mt-1">I'm here to help</p>
                 </div>
               </div>
             </div>
-
             <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r border-b border-slate-100 transform rotate-45" />
           </div>
         </div>

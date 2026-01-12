@@ -1,129 +1,77 @@
-# 🧘 MindSettler - GWOC 2025-26 (Track 1)
+# 🧘 MindSettler: A Unified Mental Wellness Ecosystem
 
-MindSettler is a psycho-education and mental well-being platform designed to help individuals navigate life challenges through structured online/offline sessions. This project follows a "calm, human, and emotionally reassuring" design philosophy.
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-black?style=for-the-badge&logo=vercel)](https://mindsettler-taupe.vercel.app)
+[![MERN Stack](https://img.shields.io/badge/Stack-MERN-blue?style=for-the-badge)](https://mongodb.com)
+[![SVNIT Surat](https://img.shields.io/badge/Institute-SVNIT%20Surat-orange?style=for-the-badge)](https://www.svnit.ac.in)
 
-## 🚀 Project Features
+**MindSettler** is a professional-grade mental health platform built to democratize access to specialized therapy. Designed by an AI student at **NIT Surat**, this project addresses the logistical friction in mental healthcare through an automated booking engine, a secure internal economy (Wallet), and smart-activation digital session rooms.
 
-- **Role-Based Access Control (RBAC)**: Distinct flows for Patients, Admins.
-- **Session Booking System**: 60-minute structured sessions with manual UPI/Cash payment tracking.
-- **Admin Dashboard**: Backend-controlled slots with Approve/Reject functionality.
-- **Lead Generation**: Dedicated corporate and workshop inquiry system.
-- **Confidentiality First**: Mandatory policy check before the first session.
+---
 
-## 🛠️ Tech Stack
+## 🎯 The "Problem vs. Solution" Philosophy
 
-- **Frontend**: React.js (Vite)
-- **Backend**: Node.js, Express.js (ESModules)
-- **Database**: MongoDB Atlas (Mongoose)
-- **Auth**: JWT & Bcryptjs
-- **Deployment**: [Add if applicable, e.g., Vercel, Heroku]
+### 1. The Friction Problem
+**Problem:** Traditional healthcare platforms have high drop-off rates due to complex payment gateways and rigid scheduling.
+**Solution:** The **MindSettler Wallet**. By pre-loading credits, users can book a session with a single click during a moment of need, eliminating "transaction anxiety."
 
-## 📂 Backend API Endpoints
+### 2. The Ghost Link Problem
+**Problem:** Users often get confused about when or where to join their session.
+**Solution:** **Smart-Room Logic**. Meeting links are hidden and "Room Locked" until exactly **10 minutes** before the session, providing a clear, stress-free countdown for the user.
 
-### Authentication
+### 3. The Deployment Gap
+**Problem:** Local development environments (Windows/Mac) often hide bugs that appear only in Linux-based production environments (Vercel/Netlify).
+**Solution:** Standardized **Linux-compliant builds**, handling case-sensitive file systems and secure proxy headers.
 
-| Method | Endpoint              | Access | Description                          |
-|--------|-----------------------|--------|--------------------------------------|
-| POST   | /api/auth/register    | Public | Register a new user (Patient) |
-| POST   | /api/auth/login       | Public | Login and receive JWT token          |
+---
 
-### Appointments
+## ✨ Core Features
 
-| Method | Endpoint                      | Access  | Description                          |
-|--------|-------------------------------|---------|--------------------------------------|
-| POST   | /api/appointments/book        | Patient | Request a 60-min session             |
-| GET    | /api/appointments/my-sessions | Patient | View personal session history        |
-| PATCH  | /api/appointments/status/:id  | Admin   | Approve/Reject and assign Consultant |
+### 💰 Secure Virtual Wallet System
+- **Atomic Transactions:** Backend ensures the wallet balance is debited (₹500/session) simultaneously with the appointment creation.
+- **Instant Refunds:** Canceled or rescheduled sessions result in immediate credit reversals to the user's wallet.
+- **Transactional Integrity:** No booking can be initiated without a pre-validated balance.
 
-### Leads & Corporate
+### 📅 Intelligent Therapy Scheduler
+- **Time-Aware Filtering:** Automatically hides past time slots for the current day to prevent impossible bookings.
+- **Specialized Modalities:** Choose from CBT, DBT, ACT, Schema Therapy, EFT, and more.
+- **Touch-Optimized UI:** A mobile-first design with horizontal snap-scrolling for therapy types and high-contrast touch targets for slot selection.
 
-| Method | Endpoint          | Access | Description                          |
-|--------|-------------------|--------|--------------------------------------|
-| POST   | /api/leads/contact | Public | Submit corporate or workshop inquiry |
+### 🎥 Digital Room "Join" Logic
+- **Countdown States:** UI transitions through three states: `Locked` ⮕ `Available Soon` (Admin preparing) ⮕ `Join Now` (Active).
+- **Security:** Meeting links are only rendered in the DOM when the 10-minute window is reached.
 
-## ⚙️ Installation & Setup
+---
 
-### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB Atlas account
-- Git
+## 🛠️ The "Vercel Hurdles" (Technical Problem Solving)
+Deploying a MERN stack project is where the real engineering happens. We solved the following:
 
-### Backend Setup
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/Aryan-Git-Hub/Mindsettler
-   cd Mindsettler/server
-   ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
 
-3. Create a `.env` file in the `server` directory with the following variables:
-   ```
-   PORT=4000
-   MONGO_URI=mongodb+srv://<username>:<password>@cluster0.39gfmzb.mongodb.net/mindsettler?retryWrites=true&w=majority
-   JWT_SECRET=your_jwt_secret_key
-   ```
+* **The Invisible Cookie:** Solved the "Cookie not saving on Vercel" issue by setting `app.set("trust proxy", 1)` and configuring JWT cookies with `SameSite: "None"` and `Secure: true`.
+* **Case-Sensitivity Errors:** Fixed build failures caused by the difference between Windows (case-insensitive) and Linux (case-sensitive) by standardizing file naming conventions and forcing Git cache updates via `git rm -r --cached .`.
+* **MongoDB Buffering Timeouts:** Resolved `findOne() timeout` errors by whitelisting `0.0.0.0/0` in MongoDB Atlas and implementing robust connection-caching logic for serverless environments.
 
-4. Run the server:
-   ```bash
-   npm run dev  # For development (with nodemon)
-   # or
-   npm start    # For production
-   ```
+---
 
-### Frontend Setup
-1. Navigate to the client directory:
-   ```bash
-   cd ../client
-   ```
+## 🤖 AI Roadmap: The Next Phase
+As an **AI Student at SVNIT**, the next version of MindSettler is set to include:
+- **AI Sentiment Analysis:** Analyzing user session notes to provide therapists with a "Mood Score" before the meeting.
+- **YOLO-Based Emotion Detection:** Tracking facial micro-expressions during sessions to provide therapists with objective data on patient progress.
+- **LLM Screening Bot:** A custom chatbot to help users navigate their symptoms and suggest the most effective therapy type (e.g., CBT vs. DBT).
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+---
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-## 📁 Project Structure
-
-```
-Mindsettler/
-├── client/          # React frontend
+## 📂 Project Structure
+```text
+mindsettler/
+├── client/                # React (Vite) + Tailwind CSS
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   └── ...
-│   └── package.json
-├── server/          # Node.js backend
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── config/
-│   └── package.json
-└── README.md
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact
-
-- Project Link: [GitHub Repository](https://github.com/Aryan-Git-Hub/Mindsettler)
-- GWOC 2025-26 Track 1
+│   │   ├── api/          # Axios configurations with withCredentials
+│   │   ├── components/   # Responsive Navbar, Success Overlays, Footer
+│   │   ├── context/      # Auth & Wallet state management
+│   │   └── pages/        # Dynamic Booking, Profile, & Auth Views
+├── server/                # Node.js + Express
+│   ├── config/           # MongoDB Atlas connection (serverSelectionTimeout)
+│   ├── controllers/      # Appointment, Wallet, and JWT Logic
+│   ├── models/           # Mongoose schemas (User, Appointment, Availability)
+│   └── routes/           # REST API Endpoints

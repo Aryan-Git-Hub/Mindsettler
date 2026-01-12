@@ -1,52 +1,175 @@
+// routes/chat.routes.js
+
 import express from "express";
 import { geminiReply } from "../utils/ai.js";
-import { protect } from "../middlewares/userMiddleware.js";
 
 const router = express.Router();
 
-// Temporary in-memory store
-const tempChatMemory = new Map();
+// In-memory chat storage (use Redis in production)
+const chatSessions = new Map();
 
-router.post("/", protect, async (req, res) => {
+// Session cleanup (remove old sessions after 30 minutes)
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+const cleanupOldSessions = () => {
+  const now = Date.now();
+  for (const [chatId, session] of chatSessions.entries()) {
+    if (now - session.lastActive > SESSION_TIMEOUT) {
+      chatSessions.delete(chatId);
+    }
+  }
+};
+
+// Run cleanup every 10 minutes
+setInterval(cleanupOldSessions, 10 * 60 * 1000);
+
+// Get or create session
+const getSession = (chatId) => {
+  if (!chatSessions.has(chatId)) {
+    chatSessions.set(chatId, {
+      history: [],
+      mood: null,
+      visitCount: 1,
+      lastActive: Date.now(),
+      createdAt: Date.now(),
+    });
+  }
+  return chatSessions.get(chatId);
+};
+
+// Main chat endpoint
+router.post("/", async (req, res) => {
   const { message, chatId } = req.body;
   const userName = req.user?.name?.split(" ")[0] || "Friend";
+  const userId = req.user?._id;
 
+  // Validate input
   if (!chatId) {
     return res.status(400).json({
-      intent: "GENERAL_CHAT",
-      reply: "Something went wrong. Please refresh and try again."
+      intent: "ERROR",
+      reply: "Something went wrong. Please refresh and try again.",
+      action: { type: "none" },
     });
   }
 
-  // Initialize memory for this chat session
-  if (!tempChatMemory.has(chatId)) {
-    tempChatMemory.set(chatId, []);
+  if (!message || message.trim().length === 0) {
+    return res.status(400).json({
+      intent: "ERROR",
+      reply: "I didn't catch that. Could you say that again?",
+      action: { type: "none" },
+    });
   }
 
-  const history = tempChatMemory.get(chatId);
+  // Get session
+  const session = getSession(chatId);
+  session.lastActive = Date.now();
 
   try {
-    const ai = await geminiReply(message, userName, history);
+    // Context for AI
+    const context = {
+      mood: session.mood,
+      visitCount: session.visitCount,
+      userId: userId,
+    };
 
-    if (ai._history) {
-      tempChatMemory.set(chatId, ai._history);
-      delete ai._history;
+    // Get AI response
+    const aiResponse = await geminiReply(message, userName, session.history, context);
+
+    // Update session
+    if (aiResponse._history) {
+      session.history = aiResponse._history;
+      delete aiResponse._history;
     }
 
-    if (ai.intent === "BOOK_SESSION") {
-      ai.reply =
-        `I'm really glad you're ready, ${userName}. ` +
-        `Let’s choose a time for your private 1 on 1 session.`;
+    if (aiResponse._mood) {
+      session.mood = aiResponse._mood;
+      delete aiResponse._mood;
     }
 
-    res.json(ai);
+    // Process navigation intents
+    const navigationMap = {
+      NAVIGATE_HOME: "/",
+      NAVIGATE_BOOKING: "/booking",
+      NAVIGATE_BLOGS: "/blogs",
+      NAVIGATE_CONTACT: "/contact",
+      NAVIGATE_PROFILE: "/profile",
+      NAVIGATE_CORPORATE: "/corporate",
+      BOOK_SESSION: "/booking",
+    };
+
+    // Add navigation target if intent matches
+    if (navigationMap[aiResponse.intent] && aiResponse.action?.type !== "navigate") {
+      aiResponse.action = {
+        ...aiResponse.action,
+        type: "navigate",
+        target: navigationMap[aiResponse.intent],
+      };
+    }
+
+    // Add default quick replies if none provided
+    if (!aiResponse.action?.buttons && aiResponse.intent === "EMOTIONAL_SUPPORT") {
+      aiResponse.action = {
+        ...aiResponse.action,
+        type: "quick_replies",
+        buttons: ["Tell me more", "Book a session", "Show resources"],
+      };
+    }
+
+    // Send response
+    res.json({
+      ...aiResponse,
+      sessionId: chatId,
+      timestamp: new Date().toISOString(),
+    });
+
   } catch (error) {
     console.error("Chat Route Error:", error);
     res.status(500).json({
-      intent: "GENERAL_CHAT",
-      reply: `I'm here with you, ${userName}. Let's keep talking.`,
+      intent: "ERROR",
+      reply: `I'm here with you, ${userName}. Let's keep talking. 💜`,
+      action: { type: "none" },
+      timestamp: new Date().toISOString(),
     });
   }
+});
+
+// Get chat history
+router.get("/history/:chatId", async (req, res) => {
+  const { chatId } = req.params;
+  
+  if (!chatSessions.has(chatId)) {
+    return res.json({ history: [], mood: null });
+  }
+
+  const session = chatSessions.get(chatId);
+  res.json({
+    history: session.history,
+    mood: session.mood,
+    visitCount: session.visitCount,
+  });
+});
+
+// Clear chat session
+router.delete("/clear/:chatId", async (req, res) => {
+  const { chatId } = req.params;
+  
+  if (chatSessions.has(chatId)) {
+    chatSessions.delete(chatId);
+  }
+  
+  res.json({ success: true, message: "Chat cleared" });
+});
+
+// Get suggested responses
+router.get("/suggestions", async (req, res) => {
+  const suggestions = [
+    "I'm feeling anxious today",
+    "I need someone to talk to",
+    "Book a therapy session",
+    "Show me some resources",
+    "I'm doing okay, just checking in",
+  ];
+  res.json({ suggestions });
 });
 
 export default router;
