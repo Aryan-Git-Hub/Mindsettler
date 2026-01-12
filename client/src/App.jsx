@@ -1,18 +1,18 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import ContactPage from "./pages/Contact.jsx";
-import AuthPage from "./pages/Authentication.jsx";
+import Home from "./pages/Home";
+import ContactPage from "./pages/Contact";
+import AuthPage from "./pages/Authentication";
 import PageNotFound from "./pages/404";
 import ScrollToTop from "./components/common/ScrollToTop";
 import AdminDashboard from "./admin/Dashboard";
-import Logout from "./components/auth/Logout.jsx";
-import { useAuth } from "./context/AuthContext.jsx";
-import BookingPage from "./pages/BookingPage.jsx";
-import CorporateServices from "./pages/CorporateServices.jsx";
-import UserProfile from "./pages/UserProfile.jsx";
-import ChatWidget from "./components/chatbot/ChatWidget.jsx";
-import BlogPage from "./pages/BlogPage.jsx";
-import BlogDetail from "./pages/BlogDetail.jsx";
+import Logout from "./components/auth/Logout";
+import { useAuth } from "./context/AuthContext";
+import BookingPage from "./pages/BookingPage";
+import CorporateServices from "./pages/CorporateServices";
+import UserProfile from "./pages/UserProfile";
+import ChatWidget from "./components/chatbot/ChatWidget";
+import BlogPage from "./pages/BlogPage";
+import BlogDetail from "./pages/BlogDetail";
 
 // A small component to wrap public pages with the Navbar
 
