@@ -75,7 +75,8 @@ export const login = async (req, res) => {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 day
       httpOnly: true, // Prevents XSS attacks from reading the cookie
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      path: "/",
     };
     const userResponse = user.toObject();
     delete userResponse.password; // Remove password from response
