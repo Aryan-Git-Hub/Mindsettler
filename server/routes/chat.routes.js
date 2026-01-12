@@ -39,9 +39,9 @@ const getSession = (chatId) => {
 
 // Main chat endpoint
 router.post("/", async (req, res) => {
-  const { message, chatId } = req.body;
-  const userName = req.user?.name?.split(" ")[0] || "Friend";
-  const userId = req.user?._id;
+  const { message, chatId, user } = req.body;
+  const userName = user?.name?.split(" ")[0] || "Friend";
+  const userId = user?._id;
 
   // Validate input
   if (!chatId) {

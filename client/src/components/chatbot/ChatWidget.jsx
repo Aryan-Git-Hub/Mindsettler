@@ -560,8 +560,8 @@ const ChatWidget = ({ user }) => {
     setMessageCount((prev) => prev + 1);
 
     try {
-      const res = await API.post("/chat", { message: text.trim(), chatId });
-      const { intent, reply, action, mood_detected, follow_up_suggestion } = res.data;
+      const res = await API.post("/chat", { message: text.trim(), chatId, user });
+      const { intent, reply, action, mood_detected } = res.data;
 
       // Build bot message
       const botMessage = {
@@ -857,7 +857,7 @@ const ChatWidget = ({ user }) => {
 
           {/* Message count badge */}
           {!isOpen && messageCount > 0 && (
-            <div className={`absolute -bottom-1 -left-1 min-w-[20px] h-5 px-1.5 bg-[#DD1764] rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform ${isDragging ? "scale-0" : "scale-100"}`}>
+            <div className={`absolute -bottom-1 -left-1 min-w-5 h-5 px-1.5 bg-[#DD1764] rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform ${isDragging ? "scale-0" : "scale-100"}`}>
               <span className="text-[10px] font-bold text-white">{messageCount > 99 ? "99+" : messageCount}</span>
             </div>
           )}
