@@ -1,45 +1,828 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>MindSettler Inquiry</title>
+    <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+    <![endif]-->
     <style>
-        .container { max-width: 600px; margin: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; background-color: #ffffff; }
-        .header { background-color: #3F2965; padding: 30px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 22px; letter-spacing: 1px; }
-        .content { padding: 40px; color: #3F2965; line-height: 1.6; }
-        .data-box { background-color: #F5F2ED; padding: 25px; border-radius: 16px; margin-top: 20px; border: 1px solid #efeae2; }
-        .label { font-weight: bold; color: #Dd1764; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
-        .value { color: #3F2965; font-size: 15px; margin-bottom: 16px; display: block; }
-        .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
-        .accent { background-color: #Dd1764; height: 6px; width: 100%; }
+      /* Reset styles */
+      body,
+      table,
+      td,
+      p,
+      a,
+      li,
+      blockquote {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background-color: #f5f3f7;
+      }
+
+      /* Responsive styles */
+      @media screen and (max-width: 600px) {
+        .container {
+          width: 100% !important;
+          padding: 10px !important;
+        }
+        .content-padding {
+          padding: 25px 20px !important;
+        }
+        .header-padding {
+          padding: 30px 20px !important;
+        }
+        .data-item {
+          padding: 15px !important;
+        }
+        .message-box {
+          padding: 20px !important;
+        }
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>MindSettler Inquiry</h1>
-        </div>
-        <div class="content">
-            <p>Hello Team,</p>
-            <p>A new message has been submitted through the contact form:</p>
-            
-            <div class="data-box">
-                <span class="label">Sender Name</span>
-                <span class="value">{{name}}</span>
-
-                <span class="label">Email Address</span>
-                <span class="value">{{email}}</span>
-
-                <span class="label">Subject</span>
-                <span class="value">{{subject}}</span>
-
-                <span class="label">Message</span>
-                <span class="value" style="white-space: pre-wrap;">{{message}}</span>
-            </div>
-        </div>
-        <div class="footer">
-            This is an automated notification from the MindSettler website.
-        </div>
-        <div class="accent"></div>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f5f3f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    "
+  >
+    <!-- Preheader Text (hidden, shows in email preview) -->
+    <div
+      style="
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+        font-size: 1px;
+        line-height: 1px;
+        color: #f5f3f7;
+      "
+    >
+      New contact form submission from {{name}} - {{subject}}
     </div>
-</body>
+
+    <!-- Email Container -->
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="background-color: #f5f3f7"
+    >
+      <tr>
+        <td align="center" style="padding: 40px 15px">
+          <!-- Main Card -->
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            width="600"
+            class="container"
+            style="
+              max-width: 600px;
+              background-color: #ffffff;
+              border-radius: 24px;
+              overflow: hidden;
+              box-shadow: 0 25px 50px -12px rgba(63, 41, 101, 0.15);
+            "
+          >
+            <!-- Gradient Top Bar -->
+            <tr>
+              <td
+                style="
+                  height: 6px;
+                  background: linear-gradient(
+                    90deg,
+                    #3f2965 0%,
+                    #dd1764 50%,
+                    #3f2965 100%
+                  );
+                "
+              ></td>
+            </tr>
+
+            <!-- Header Section -->
+            <tr>
+              <td
+                class="header-padding"
+                style="
+                  background: linear-gradient(135deg, #3f2965 0%, #5a3d8a 100%);
+                  padding: 45px 40px;
+                  text-align: center;
+                "
+              >
+                <!-- Logo/Icon Circle -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  align="center"
+                >
+                  <tr>
+                    <td
+                      style="
+                        width: 70px;
+                        height: 70px;
+                        background-color: rgba(255, 255, 255, 0.15);
+                        border-radius: 20px;
+                        text-align: center;
+                        vertical-align: middle;
+                      "
+                    >
+                      <span style="font-size: 32px">💜</span>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Title -->
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 20px 0 8px 0;
+                    font-size: 26px;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                  "
+                >
+                  New Message Received
+                </h1>
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.7);
+                    margin: 0;
+                    font-size: 14px;
+                    font-weight: 500;
+                  "
+                >
+                  MindSettler Contact Form
+                </p>
+
+                <!-- Decorative dots -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  align="center"
+                  style="margin-top: 20px"
+                >
+                  <tr>
+                    <td
+                      style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 50%;
+                      "
+                    ></td>
+                    <td style="width: 15px"></td>
+                    <td
+                      style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: rgba(255, 255, 255, 0.5);
+                        border-radius: 50%;
+                      "
+                    ></td>
+                    <td style="width: 15px"></td>
+                    <td
+                      style="
+                        width: 8px;
+                        height: 8px;
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 50%;
+                      "
+                    ></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="content-padding" style="padding: 40px">
+                <!-- Greeting -->
+                <p
+                  style="
+                    color: #3f2965;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    margin: 0 0 25px 0;
+                  "
+                >
+                  Hello Team! 👋
+                </p>
+                <p
+                  style="
+                    color: #64748b;
+                    font-size: 15px;
+                    line-height: 1.7;
+                    margin: 0 0 30px 0;
+                  "
+                >
+                  Someone just reached out through your website. Here are the
+                  details:
+                </p>
+
+                <!-- Contact Info Cards -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  width="100%"
+                >
+                  <!-- Sender Info Row -->
+                  <tr>
+                    <td style="padding-bottom: 15px">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tr>
+                          <!-- Name Card -->
+                          <td
+                            class="data-item"
+                            width="48%"
+                            style="
+                              background-color: #f8f6fb;
+                              border-radius: 16px;
+                              padding: 20px;
+                              vertical-align: top;
+                            "
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    width: 36px;
+                                    height: 36px;
+                                    background: linear-gradient(
+                                      135deg,
+                                      #3f2965,
+                                      #5a3d8a
+                                    );
+                                    border-radius: 10px;
+                                    text-align: center;
+                                    vertical-align: middle;
+                                  "
+                                >
+                                  <span style="font-size: 16px">👤</span>
+                                </td>
+                                <td style="padding-left: 12px">
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 10px;
+                                      font-weight: 700;
+                                      color: #dd1764;
+                                      text-transform: uppercase;
+                                      letter-spacing: 1px;
+                                      margin-bottom: 4px;
+                                    "
+                                    >Name</span
+                                  >
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 15px;
+                                      font-weight: 600;
+                                      color: #3f2965;
+                                    "
+                                    >{{name}}</span
+                                  >
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+
+                          <td width="4%"></td>
+
+                          <!-- Email Card -->
+                          <td
+                            class="data-item"
+                            width="48%"
+                            style="
+                              background-color: #fdf2f5;
+                              border-radius: 16px;
+                              padding: 20px;
+                              vertical-align: top;
+                            "
+                          >
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    width: 36px;
+                                    height: 36px;
+                                    background: linear-gradient(
+                                      135deg,
+                                      #dd1764,
+                                      #e83d7f
+                                    );
+                                    border-radius: 10px;
+                                    text-align: center;
+                                    vertical-align: middle;
+                                  "
+                                >
+                                  <span style="font-size: 16px">✉️</span>
+                                </td>
+                                <td style="padding-left: 12px">
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 10px;
+                                      font-weight: 700;
+                                      color: #dd1764;
+                                      text-transform: uppercase;
+                                      letter-spacing: 1px;
+                                      margin-bottom: 4px;
+                                    "
+                                    >Email</span
+                                  >
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 14px;
+                                      font-weight: 600;
+                                      color: #3f2965;
+                                    "
+                                    >{{email}}</span
+                                  >
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Subject Card -->
+                  <tr>
+                    <td style="padding-bottom: 15px">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                        style="background-color: #f0fdf4; border-radius: 16px"
+                      >
+                        <tr>
+                          <td class="data-item" style="padding: 20px">
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    width: 36px;
+                                    height: 36px;
+                                    background: linear-gradient(
+                                      135deg,
+                                      #22c55e,
+                                      #16a34a
+                                    );
+                                    border-radius: 10px;
+                                    text-align: center;
+                                    vertical-align: middle;
+                                  "
+                                >
+                                  <span style="font-size: 16px">📋</span>
+                                </td>
+                                <td style="padding-left: 12px">
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 10px;
+                                      font-weight: 700;
+                                      color: #16a34a;
+                                      text-transform: uppercase;
+                                      letter-spacing: 1px;
+                                      margin-bottom: 4px;
+                                    "
+                                    >Subject</span
+                                  >
+                                  <span
+                                    style="
+                                      display: block;
+                                      font-size: 15px;
+                                      font-weight: 600;
+                                      color: #3f2965;
+                                    "
+                                    >{{subject}}</span
+                                  >
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Message Card -->
+                  <tr>
+                    <td>
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                        style="
+                          background: linear-gradient(
+                            135deg,
+                            #f8f6fb 0%,
+                            #fdf2f5 100%
+                          );
+                          border-radius: 20px;
+                          border: 2px solid #ebe5f2;
+                        "
+                      >
+                        <tr>
+                          <td class="message-box" style="padding: 25px">
+                            <!-- Message Header -->
+                            <table
+                              role="presentation"
+                              cellpadding="0"
+                              cellspacing="0"
+                              style="margin-bottom: 15px"
+                            >
+                              <tr>
+                                <td
+                                  style="
+                                    width: 36px;
+                                    height: 36px;
+                                    background: linear-gradient(
+                                      135deg,
+                                      #3f2965,
+                                      #dd1764
+                                    );
+                                    border-radius: 10px;
+                                    text-align: center;
+                                    vertical-align: middle;
+                                  "
+                                >
+                                  <span style="font-size: 16px">💬</span>
+                                </td>
+                                <td style="padding-left: 12px">
+                                  <span
+                                    style="
+                                      font-size: 10px;
+                                      font-weight: 700;
+                                      color: #dd1764;
+                                      text-transform: uppercase;
+                                      letter-spacing: 1px;
+                                    "
+                                    >Message</span
+                                  >
+                                </td>
+                              </tr>
+                            </table>
+
+                            <!-- Message Content -->
+                            <div
+                              style="
+                                background-color: #ffffff;
+                                border-radius: 12px;
+                                padding: 20px;
+                                border-left: 4px solid #dd1764;
+                              "
+                            >
+                              <p
+                                style="
+                                  margin: 0;
+                                  font-size: 15px;
+                                  line-height: 1.8;
+                                  color: #475569;
+                                  white-space: pre-wrap;
+                                "
+                              >
+                                {{message}}
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Divider -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  width="100%"
+                  style="margin: 35px 0"
+                >
+                  <tr>
+                    <td style="border-bottom: 2px dashed #e2e8f0"></td>
+                  </tr>
+                </table>
+
+                <!-- Quick Action Buttons -->
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  width="100%"
+                >
+                  <tr>
+                    <td align="center">
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 13px;
+                          margin: 0 0 20px 0;
+                        "
+                      >
+                        Quick Actions
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                      >
+                        <tr>
+                          <!-- Reply Button -->
+                          <td>
+                            <a
+                              href="mailto:{{email}}?subject=Re: {{subject}}"
+                              style="
+                                display: inline-block;
+                                background: linear-gradient(
+                                  135deg,
+                                  #3f2965,
+                                  #5a3d8a
+                                );
+                                color: #ffffff;
+                                text-decoration: none;
+                                font-size: 14px;
+                                font-weight: 600;
+                                padding: 14px 28px;
+                                border-radius: 12px;
+                              "
+                            >
+                              ↩️ Reply Now
+                            </a>
+                          </td>
+                          <td style="width: 15px"></td>
+                          <!-- Dashboard Button -->
+                          <td>
+                            <a
+                              href="https://mindsettler.com/admin"
+                              style="
+                                display: inline-block;
+                                background-color: #f1f5f9;
+                                color: #3f2965;
+                                text-decoration: none;
+                                font-size: 14px;
+                                font-weight: 600;
+                                padding: 14px 28px;
+                                border-radius: 12px;
+                              "
+                            >
+                              📊 Dashboard
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #f8f6fb;
+                  padding: 30px 40px;
+                  border-top: 1px solid #ebe5f2;
+                "
+              >
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  width="100%"
+                >
+                  <tr>
+                    <td align="center">
+                      <!-- Logo Text -->
+                      <h2
+                        style="
+                          margin: 0 0 10px 0;
+                          font-size: 20px;
+                          color: #3f2965;
+                        "
+                      >
+                        Mind<span style="color: #dd1764">Settler</span>
+                      </h2>
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 12px;
+                          margin: 0 0 20px 0;
+                        "
+                      >
+                        Your Mental Wellness Companion
+                      </p>
+
+                      <!-- Social Links -->
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        align="center"
+                        style="margin-bottom: 20px"
+                      >
+                        <tr>
+                          <td style="padding: 0 8px">
+                            <a
+                              href="#"
+                              style="
+                                display: inline-block;
+                                width: 36px;
+                                height: 36px;
+                                background-color: #3f2965;
+                                border-radius: 10px;
+                                text-align: center;
+                                line-height: 36px;
+                                text-decoration: none;
+                              "
+                            >
+                              <span style="font-size: 16px">📘</span>
+                            </a>
+                          </td>
+                          <td style="padding: 0 8px">
+                            <a
+                              href="#"
+                              style="
+                                display: inline-block;
+                                width: 36px;
+                                height: 36px;
+                                background: linear-gradient(
+                                  135deg,
+                                  #dd1764,
+                                  #e83d7f
+                                );
+                                border-radius: 10px;
+                                text-align: center;
+                                line-height: 36px;
+                                text-decoration: none;
+                              "
+                            >
+                              <span style="font-size: 16px">📸</span>
+                            </a>
+                          </td>
+                          <td style="padding: 0 8px">
+                            <a
+                              href="#"
+                              style="
+                                display: inline-block;
+                                width: 36px;
+                                height: 36px;
+                                background-color: #3f2965;
+                                border-radius: 10px;
+                                text-align: center;
+                                line-height: 36px;
+                                text-decoration: none;
+                              "
+                            >
+                              <span style="font-size: 16px">🐦</span>
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Divider -->
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="60%"
+                        align="center"
+                        style="margin-bottom: 20px"
+                      >
+                        <tr>
+                          <td style="border-bottom: 1px solid #e2e8f0"></td>
+                        </tr>
+                      </table>
+
+                      <!-- Footer Text -->
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 11px;
+                          line-height: 1.6;
+                          margin: 0;
+                        "
+                      >
+                        This is an automated notification from MindSettler.<br />
+                        © 2024 MindSettler. All rights reserved.
+                      </p>
+
+                      <!-- Timestamp -->
+                      <p
+                        style="
+                          color: #cbd5e1;
+                          font-size: 10px;
+                          margin: 15px 0 0 0;
+                        "
+                      >
+                        📅 Received: {{timestamp}}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Bottom Gradient Bar -->
+            <tr>
+              <td
+                style="
+                  height: 6px;
+                  background: linear-gradient(
+                    90deg,
+                    #dd1764 0%,
+                    #3f2965 50%,
+                    #dd1764 100%
+                  );
+                "
+              ></td>
+            </tr>
+          </table>
+
+          <!-- Unsubscribe Link -->
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            width="600"
+            style="max-width: 600px; margin-top: 20px"
+          >
+            <tr>
+              <td align="center">
+                <p style="color: #94a3b8; font-size: 11px; margin: 0">
+                  <a href="#" style="color: #94a3b8; text-decoration: underline"
+                    >Manage Notifications</a
+                  >
+                  &nbsp;•&nbsp;
+                  <a href="#" style="color: #94a3b8; text-decoration: underline"
+                    >Help Center</a
+                  >
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

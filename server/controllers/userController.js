@@ -45,13 +45,10 @@ export const userSignup = async (req, res) => {
     };
     const userResponse = user.toObject();
     delete userResponse.password; // Remove password from response
-    res
-      .cookie("token", token, cookieOptions)
-      .status(200)
-      .json({
-        success: true,
-        user: userResponse,
-      });
+    res.cookie("token", token, cookieOptions).status(200).json({
+      success: true,
+      user: userResponse,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -80,13 +77,10 @@ export const login = async (req, res) => {
     };
     const userResponse = user.toObject();
     delete userResponse.password; // Remove password from response
-    res
-      .cookie("token", token, cookieOptions)
-      .status(200)
-      .json({
-        success: true,
-        user: userResponse,
-      });
+    res.cookie("token", token, cookieOptions).status(200).json({
+      success: true,
+      user: userResponse,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -152,7 +146,6 @@ export const logout = async (req, res) => {
   }
 };
 
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const sendContactEmail = async (req, res) => {
@@ -166,11 +159,11 @@ export const sendContactEmail = async (req, res) => {
 
     // 2. Replace placeholders with actual data
     htmlContent = htmlContent
-      .replace("{{name}}", name)
-      .replace("{{email}}", email)
-      .replace("{{subject}}", subject || "General Inquiry")
-      .replace("{{message}}", message);
-
+      .replace(/{{name}}/g, name)
+      .replace(/{{email}}/g, email)
+      .replace(/{{subject}}/g, subject || "General Inquiry")
+      .replace(/{{message}}/g, message)
+      .replace(/{{timestamp}}/g, new Date().toLocaleString());
     // 3. Configure Transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -198,16 +191,17 @@ export const sendContactEmail = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Email Error:", error);
-    res.status(500).json({ success: false, message: "Server Error: Could not send email." });
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error: Could not send email." });
   }
 };
-
 
 export const profileUpdate = async (req, res) => {
   try {
     const userId = req.user._id;
     const { name, phone } = req.body;
-    const updates = {name, phone};
+    const updates = { name, phone };
 
     const updatedUser = await User.findByIdAndUpdate(userId, updates, {
       new: true,

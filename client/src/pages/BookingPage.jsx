@@ -292,9 +292,9 @@ const ProgressStepper = ({ currentStep }) => {
                   `}
                 >
                   {isComplete ? (
-                    <Check size={14} className="animate-scale-in md:w-[18px] md:h-[18px]" />
+                    <Check size={14} className="animate-scale-in md:w-4.5 md:h-4.5" />
                   ) : (
-                    <Icon size={14} className="md:w-[18px] md:h-[18px]" />
+                    <Icon size={14} className="md:w-4.5 md:h-4.5" />
                   )}
                 </div>
                 <span className={`
