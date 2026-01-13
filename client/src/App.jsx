@@ -31,7 +31,7 @@ function App() {
         <Route path="/blogs" element={<BlogPage/>}/>
         <Route path="/blog/:id" element={<BlogDetail/>}/>
         <Route path="/profile" element={<UserProfile />} />
-        {!user && <Route path="/auth" element={<AuthPage />} />}
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/logout" element={<Logout />} />
         {/* GROUP 2: Admin Pages (No Public Navbar) */}
         {/* Your AdminDashboard has its own Sidebar, so it doesn't need a wrapper */}

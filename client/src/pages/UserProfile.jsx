@@ -749,13 +749,12 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
   
-  if (!user || user.role !== "user") return (<Navigate to="/auth" />);
   const menuItems = [
     { name: "Profile", icon: User },
     { name: "My Wallet", icon: Wallet },
     { name: "My Bookings", icon: CalendarCheck },
   ];
-
+  
   useEffect(() => {
     const syncTabFromHash = () => {
       const hash = decodeURIComponent(window.location.hash.replace("#", ""));
@@ -766,7 +765,7 @@ const UserDashboard = () => {
     window.addEventListener("hashchange", syncTabFromHash);
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
-
+  
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -778,6 +777,8 @@ const UserDashboard = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
+  
+  if (!user || user.role !== "user") return (<Navigate to="/auth" />);
 
   const handleLogout = useCallback(() => {
     setIsMobileMenuOpen(false);

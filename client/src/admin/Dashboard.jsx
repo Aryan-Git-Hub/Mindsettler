@@ -1181,15 +1181,14 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
-  if (!user || user.role !== "admin") return (<Navigate to="/logout" replace />);
-
+  
   const navItems = [
     { name: "Profile", icon: UserCircle },
     { name: "Wallet Requests", icon: Wallet },
     { name: "Appointments", icon: CalendarCheck },
     { name: "Time Slots", icon: Clock },
   ];
-
+  
   useEffect(() => {
     const syncTabFromHash = () => {
       const hash = decodeURIComponent(window.location.hash.replace("#", ""));
@@ -1200,7 +1199,7 @@ const AdminDashboard = () => {
     window.addEventListener("hashchange", syncTabFromHash);
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
-
+  
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -1212,7 +1211,9 @@ const AdminDashboard = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
-
+  
+  if (!user || user.role !== "admin") return (<Navigate to="/auth" replace />);
+  
   const handleLogout = useCallback(() => {
     setIsMobileMenuOpen(false);
     navigate("/logout");

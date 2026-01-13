@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import API from "../api/axios";
 import logo from "../assets/icons/MindsettlerLogo-removebg-preview.png";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Login_img from "../assets/images/Login_img-removebg-preview.png";
 
@@ -258,12 +258,14 @@ const AuthPage = () => {
   const [errors, setErrors] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
 
   useEffect(() => {
     setErrors([]);
     setShowPassword(false);
   }, [view]);
+
+  if (user) return (<Navigate to="/" replace />);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
