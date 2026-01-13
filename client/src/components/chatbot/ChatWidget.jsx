@@ -1,5 +1,7 @@
 // components/ChatWidget/ChatWidget.jsx
 
+// components/ChatWidget/ChatWidget.jsx
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -496,40 +498,14 @@ const ChatWidget = ({ user }) => {
     setMessageCount((prev) => prev + 1);
 
     try {
-      const res = await API.post("/chat", { message: text.trim(), chatId, user });
-      const { intent, reply, action, mood_detected } = res.data;
+      const res = await API.post("/chat", { message: userText, chatId });
+      const { intent, reply } = res.data;
+      setHistory((prev) => [...prev, { role: "bot", content: reply }]);
 
-      // Build bot message
-      const botMessage = {
-        role: "bot",
-        content: reply,
-        timestamp: new Date().toISOString(),
-        action: action || { type: "none" },
-        mood_detected: mood_detected,
-        intent: intent,
-      };
-
-      // Add default quick replies if none provided and not navigating
-      if (!action?.buttons && action?.type !== "navigate") {
-        botMessage.action = {
-          ...botMessage.action,
-          buttons: intent === "EMOTIONAL_SUPPORT" 
-            ? ["Tell me more", "Book a session", "Show resources"]
-            : null,
-        };
-      }
-
-      setHistory((prev) => [...prev, botMessage]);
-
-      // Update mood
-      if (mood_detected) setCurrentMood(mood_detected);
-
-      // Handle navigation intents
-      const navigationIntents = ["BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_BLOGS", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE", "NAVIGATE_LOGOUT"];
-      
-      // Auto-navigate
-      if (navigationIntents.includes(intent) && action?.target) {
-        handleNavigate(action.target);
+      if (intent === "BOOK_SESSION") {
+        setTimeout(() => {
+          window.location.hash = "#Time Slots";
+        }, 3000);
       }
 
     } catch (err) {
@@ -809,25 +785,36 @@ const ChatWidget = ({ user }) => {
 
       {/* === NOTIFICATION BUBBLE === */}
       {!isOpen && showNotification && !isDragging && (
-        <div style={getNotificationPosition()} className="z-[59] animate-in fade-in slide-in-from-right-5 duration-700 delay-1000">
-          <div className="relative max-w-[220px]">
+        <div
+          style={getNotificationPosition()}
+          className="z-59 animate-in fade-in slide-in-from-right-5 duration-700 delay-1000"
+        >
+          <div className="relative max-w-55 sm:max-w-60">
             <div className="bg-white p-4 rounded-2xl shadow-xl border border-slate-100 relative overflow-hidden group hover:shadow-2xl transition-shadow">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] to-[#DD1764]" />
-              
-              <button onClick={() => setShowNotification(false)} className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full transition-colors opacity-0 group-hover:opacity-100">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#3F2965] to-[#Dd1764]" />
+
+              <button
+                onClick={() => setShowNotification(false)}
+                className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+              >
                 <X size={12} className="text-slate-400" />
               </button>
 
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3F2965] to-[#DD1764] flex items-center justify-center shrink-0 shadow-lg">
-                  <MessageCircle size={18} className="text-white" />
+                <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#3F2965] to-[#Dd1764] flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/20">
+                  <Sparkles size={18} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-700">Need someone to talk to? 💜</p>
-                  <p className="text-[10px] text-slate-400 mt-1">I'm here to help</p>
+                  <p className="text-xs sm:text-sm font-bold text-slate-700 leading-snug">
+                    Need someone to talk to? 💜
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Hold & drag me anywhere!
+                  </p>
                 </div>
               </div>
             </div>
+
             <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-r border-b border-slate-100 transform rotate-45" />
           </div>
         </div>

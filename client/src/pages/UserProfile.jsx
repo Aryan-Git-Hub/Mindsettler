@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import {
   User,
   Wallet,
@@ -748,9 +748,8 @@ const UserDashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-
-  if (!user || user.role !== "user") return (navigate("/auth"));
-
+  
+  if (!user || user.role !== "user") return (<Navigate to="/auth" />);
   const menuItems = [
     { name: "Profile", icon: User },
     { name: "My Wallet", icon: Wallet },

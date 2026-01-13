@@ -134,14 +134,17 @@ export const getMe = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("token", null, {
+    const cookieOptions = {
       expires: new Date(Date.now()),
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       path: "/",
+    };
+    res.cookie("token", null, cookieOptions).status(200).json({
+      success: true,
+      message: "Logged out successfully"
     });
-    res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }

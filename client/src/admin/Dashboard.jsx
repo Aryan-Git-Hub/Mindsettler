@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Logo from "../assets/icons/MindsettlerLogo-removebg-preview.png";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import {
   CalendarCheck,
   Clock,
@@ -1181,7 +1181,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
-  if (!user || user.role !== "admin") return navigate("/auth");
+  if (!user || user.role !== "admin") return (<Navigate to="/logout" replace />);
 
   const navItems = [
     { name: "Profile", icon: UserCircle },

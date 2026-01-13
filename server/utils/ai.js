@@ -231,7 +231,6 @@ export const geminiReply = async (msg, userName, sessionHistory = [], context = 
       mood_detected: parsed.mood_detected || null,
       follow_up_suggestion: parsed.follow_up_suggestion || null,
     };
-    console.log("AI Parsed Response:", parsed);
 
     // Save conversation (limit to last 12 messages = 6 exchanges)
     const updatedHistory = [
