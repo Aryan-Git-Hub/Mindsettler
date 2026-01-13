@@ -1181,6 +1181,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
+  if (!user || user.role !== "admin") return navigate("/auth");
+
   const navItems = [
     { name: "Profile", icon: UserCircle },
     { name: "Wallet Requests", icon: Wallet },

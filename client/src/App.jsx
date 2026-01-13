@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router";
 import Home from "./pages/Home.jsx";
 import ContactPage from "./pages/Contact.jsx";
 import AuthPage from "./pages/Authentication.jsx";
@@ -30,12 +30,12 @@ function App() {
         <Route path="/corporate" element={<CorporateServices/>}/>
         <Route path="/blogs" element={<BlogPage/>}/>
         <Route path="/blog/:id" element={<BlogDetail/>}/>
-        {user && user.role==="user" && <Route path="/profile" element={<UserProfile />} />}
+        <Route path="/profile" element={<UserProfile />} />
         {!user && <Route path="/auth" element={<AuthPage />} />}
         <Route path="/logout" element={<Logout />} />
         {/* GROUP 2: Admin Pages (No Public Navbar) */}
         {/* Your AdminDashboard has its own Sidebar, so it doesn't need a wrapper */}
-        {user && user.role==="admin" && <Route path="/admin" element={<AdminDashboard />} />}
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>

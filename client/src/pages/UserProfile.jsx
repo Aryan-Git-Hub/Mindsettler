@@ -163,6 +163,7 @@ const WalletView = ({ user }) => {
   const [transactions, setTransactions] = useState([]);
   const [formData, setFormData] = useState({ amount: "", transactionId: "" });
 
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -747,6 +748,8 @@ const UserDashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
+
+  if (!user || user.role !== "user") return (navigate("/auth"));
 
   const menuItems = [
     { name: "Profile", icon: User },

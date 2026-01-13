@@ -94,11 +94,12 @@ router.post("/", async (req, res) => {
       NAVIGATE_CONTACT: "/contact",
       NAVIGATE_PROFILE: "/profile",
       NAVIGATE_CORPORATE: "/corporate",
+      NAVIGATE_LOGOUT: "/logout",
       BOOK_SESSION: "/booking",
     };
 
     // Add navigation target if intent matches
-    if (navigationMap[aiResponse.intent] && aiResponse.action?.type !== "navigate") {
+    if (navigationMap[aiResponse.intent]) {
       aiResponse.action = {
         ...aiResponse.action,
         type: "navigate",
@@ -114,6 +115,7 @@ router.post("/", async (req, res) => {
         buttons: ["Tell me more", "Book a session", "Show resources"],
       };
     }
+    console.log("AI Response:", aiResponse);
 
     // Send response
     res.json({

@@ -69,6 +69,7 @@ const pageConfig = {
   "/contact": { name: "Contact Us", icon: Phone, color: "from-blue-500 to-indigo-500" },
   "/profile": { name: "My Profile", icon: User, color: "from-slate-600 to-slate-800" },
   "/corporate": { name: "Corporate", icon: Briefcase, color: "from-amber-500 to-orange-500" },
+  "/logout": { name: "Logout", icon: ShieldCheck, color: "from-red-500 to-pink-500" },
 };
 
 // Default quick replies
@@ -82,24 +83,6 @@ const defaultQuickReplies = [
 // ============================================
 // SUB-COMPONENTS
 // ============================================
-
-// Floating particles
-const FloatingParticles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(6)].map((_, i) => (
-      <div
-        key={i}
-        className="absolute w-2 h-2 bg-white/20 rounded-full animate-float"
-        style={{
-          left: `${15 + i * 15}%`,
-          top: `${20 + (i % 3) * 25}%`,
-          animationDelay: `${i * 0.5}s`,
-          animationDuration: `${3 + i * 0.5}s`,
-        }}
-      />
-    ))}
-  </div>
-);
 
 // Typing indicator
 const TypingIndicator = () => (
@@ -119,7 +102,6 @@ const TypingIndicator = () => (
               style={{ animationDelay: `${i * 150}ms` }}
             />
           ))}
-          <span className="text-[10px] text-slate-400 ml-1">typing...</span>
         </div>
       </div>
     </div>
@@ -170,39 +152,6 @@ const QuickActions = ({ buttons, onSelect, isAnimated = true }) => {
   );
 };
 
-// Resource cards
-const ResourceCards = ({ resources, onNavigate }) => {
-  if (!resources || resources.length === 0) return null;
-
-  return (
-    <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-        <BookOpen size={10} />
-        Suggested Resources
-      </p>
-      <div className="space-y-1.5">
-        {resources.map((resource, i) => (
-          <button
-            key={i}
-            onClick={() => onNavigate(resource.path)}
-            className="w-full flex items-center justify-between p-3 
-                       bg-white/80 hover:bg-gradient-to-r hover:from-[#3F2965]/5 hover:to-[#DD1764]/5
-                       border border-slate-100 hover:border-[#3F2965]/20
-                       rounded-xl text-left transition-all duration-300 group"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3F2965]/10 to-[#DD1764]/10 flex items-center justify-center">
-                <BookOpen size={14} className="text-[#DD1764]" />
-              </div>
-              <span className="text-xs font-semibold text-[#3F2965]">{resource.title}</span>
-            </div>
-            <ExternalLink size={12} className="text-slate-300 group-hover:text-[#DD1764] transition-colors" />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // Navigation button
 const NavigationButton = ({ target, onNavigate, customLabel }) => {
@@ -261,7 +210,7 @@ const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) 
             relative p-4 text-[13px] sm:text-sm font-medium leading-relaxed shadow-lg
             transition-all duration-300 group-hover:shadow-xl
             ${isUser
-              ? "bg-gradient-to-br from-[#DD1764] via-[#e83d7f] to-[#ff6b9d] text-white rounded-2xl rounded-tr-sm"
+              ? "bg-linear-to-br from-[#DD1764] via-[#e83d7f] to-[#ff6b9d] text-white rounded-2xl rounded-tr-sm"
               : "bg-white/80 backdrop-blur-sm text-slate-700 rounded-2xl rounded-tl-sm border border-white/50"
             }
           `}
@@ -282,11 +231,6 @@ const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) 
           <QuickActions buttons={message.action.buttons} onSelect={onQuickReply} />
         )}
 
-        {/* Resource Cards */}
-        {!isUser && message.action?.resources && (
-          <ResourceCards resources={message.action.resources} onNavigate={onNavigate} />
-        )}
-
         {/* Navigation Button */}
         {!isUser && message.action?.type === "navigate" && message.action?.target && (
           <NavigationButton target={message.action.target} onNavigate={onNavigate} />
@@ -300,14 +244,6 @@ const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) 
               minute: "2-digit",
             })}
           </span>
-          {!isUser && (
-            <button
-              onClick={() => setShowReactions(!showReactions)}
-              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded-full transition-all"
-            >
-              <Heart size={12} className="text-slate-300 hover:text-pink-500" />
-            </button>
-          )}
         </div>
 
         {/* Reactions popup */}
@@ -589,13 +525,11 @@ const ChatWidget = ({ user }) => {
       if (mood_detected) setCurrentMood(mood_detected);
 
       // Handle navigation intents
-      const navigationIntents = ["BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_BLOGS", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE"];
+      const navigationIntents = ["BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_BLOGS", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE", "NAVIGATE_LOGOUT"];
       
+      // Auto-navigate
       if (navigationIntents.includes(intent) && action?.target) {
-        // Auto-navigate after delay for booking
-        if (intent === "BOOK_SESSION") {
-          setTimeout(() => handleNavigate(action.target), 2500);
-        }
+        handleNavigate(action.target);
       }
 
     } catch (err) {
@@ -658,7 +592,6 @@ const ChatWidget = ({ user }) => {
             <div className="shrink-0 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-[#3F2965] via-[#5a3d8a] to-[#DD1764]" />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10" />
-              <FloatingParticles />
 
               <div className="relative px-4 py-4 flex justify-between items-center safe-area-top">
                 <div className="flex items-center gap-3">

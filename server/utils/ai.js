@@ -65,8 +65,11 @@ ${context.visitCount ? `This is visit #${context.visitCount}` : ''}
 - **NAVIGATE_CORPORATE**: User asks about corporate programs, team wellness, company services
   Keywords: "corporate", "company", "team", "workplace", "employee", "business", "organization"
 
+- **NAVIGATE_LOGOUT**: User wants to log out, sign out, end session
+  Keywords: "log out", "sign out", "end session", "exit account"
+
 ## Emotional Intents
-- **EMOTIONAL_SUPPORT**: User shares pain, confusion, sadness, stress, loneliness, anxiety, struggles
+- **EMOTIONAL_SUPPORT**: User shares pain, confusion, sadness, stress, loneliness, anxiety, struggles, need to talk
   → Empathize first, then gently guide toward booking or resources
 
 - **CRISIS_SUPPORT**: User expresses self-harm thoughts, hopelessness, severe distress
@@ -90,10 +93,9 @@ Output ONLY valid JSON with this structure:
   "intent": "INTENT_NAME",
   "reply": "Your empathetic response here (150-200 chars)",
   "action": {
-    "type": "navigate" | "suggest" | "quick_replies" | "none",
+    "type": "navigate" | "suggest" | "none",
     "target": "/page-path or null",
-    "buttons": ["Button 1", "Button 2"] or null,
-    "resources": [{"title": "...", "path": "..."}] or null
+    "buttons": ["Button 1", "Button 2"] or null
   },
   "mood_detected": "happy" | "sad" | "anxious" | "stressed" | "neutral" | "hopeful" | null,
   "follow_up_suggestion": "A gentle follow-up question or null"
@@ -109,29 +111,14 @@ User: "I want to book a session"
   "action": {
     "type": "navigate",
     "target": "/booking",
-    "buttons": ["View Available Slots", "Maybe Later"],
+    "buttons": ["Maybe Later"],
     "resources": null
   },
   "mood_detected": "hopeful",
   "follow_up_suggestion": null
 }
 
-## Example 2: User feeling anxious
-User: "I've been feeling really anxious lately"
-{
-  "intent": "EMOTIONAL_SUPPORT",
-  "reply": "That sounds really overwhelming, ${userName}. Anxiety can be so exhausting. You don't have to carry this alone. 💙",
-  "action": {
-    "type": "quick_replies",
-    "target": null,
-    "buttons": ["Tell me more", "I want to book a session", "Show me resources"],
-    "resources": null
-  },
-  "mood_detected": "anxious",
-  "follow_up_suggestion": "Would you like to share what's been triggering these feelings?"
-}
-
-## Example 3: User asks about blogs
+## Example 2: User asks about blogs
 User: "Do you have any articles on stress?"
 {
   "intent": "NAVIGATE_BLOGS",
@@ -140,10 +127,6 @@ User: "Do you have any articles on stress?"
     "type": "navigate",
     "target": "/blogs",
     "buttons": ["Browse Articles", "Talk to Someone Instead"],
-    "resources": [
-      {"title": "5 Ways to Manage Daily Stress", "path": "/blogs/stress-management"},
-      {"title": "Understanding Anxiety", "path": "/blogs/understanding-anxiety"}
-    ]
   },
   "mood_detected": "stressed",
   "follow_up_suggestion": null
@@ -158,7 +141,6 @@ User: "Hi there!"
     "type": "quick_replies",
     "target": null,
     "buttons": ["I'm doing okay", "Not great today", "I need help"],
-    "resources": null
   },
   "mood_detected": null,
   "follow_up_suggestion": null
@@ -195,29 +177,6 @@ If user expresses self-harm, suicide ideation, or severe crisis:
 
 Respond ONLY in JSON format.
 `;
-
-// Blog/Resource suggestions based on mood or topic
-const getResourceSuggestions = (intent, mood) => {
-  const resources = {
-    anxious: [
-      { title: "Understanding Anxiety", path: "/blogs/understanding-anxiety" },
-      { title: "Breathing Techniques", path: "/blogs/breathing-exercises" },
-    ],
-    stressed: [
-      { title: "Managing Daily Stress", path: "/blogs/stress-management" },
-      { title: "Work-Life Balance", path: "/blogs/work-life-balance" },
-    ],
-    sad: [
-      { title: "Coping with Sadness", path: "/blogs/coping-sadness" },
-      { title: "Finding Joy Again", path: "/blogs/finding-joy" },
-    ],
-    default: [
-      { title: "Mental Wellness Tips", path: "/blogs/wellness-tips" },
-      { title: "Self-Care Guide", path: "/blogs/self-care" },
-    ],
-  };
-  return resources[mood] || resources.default;
-};
 
 export const geminiReply = async (msg, userName, sessionHistory = [], context = {}) => {
   try {
@@ -258,7 +217,7 @@ export const geminiReply = async (msg, userName, sessionHistory = [], context = 
       parsed = {
         intent: "GENERAL_CHAT",
         reply: `I'm here with you, ${userName}. Tell me more about how you're feeling.`,
-        action: { type: "none", target: null, buttons: null, resources: null },
+        action: { type: "none", target: null, buttons: null},
         mood_detected: null,
         follow_up_suggestion: null,
       };
@@ -268,17 +227,11 @@ export const geminiReply = async (msg, userName, sessionHistory = [], context = 
     parsed = {
       intent: parsed.intent || "GENERAL_CHAT",
       reply: parsed.reply || `I'm here for you, ${userName}.`,
-      action: parsed.action || { type: "none", target: null, buttons: null, resources: null },
+      action: parsed.action || { type: "none", target: null, buttons: null },
       mood_detected: parsed.mood_detected || null,
       follow_up_suggestion: parsed.follow_up_suggestion || null,
     };
-
-    // Enrich with resource suggestions if needed
-    if (parsed.intent === "GET_RESOURCES" || parsed.intent === "NAVIGATE_BLOGS") {
-      if (!parsed.action.resources) {
-        parsed.action.resources = getResourceSuggestions(parsed.intent, parsed.mood_detected);
-      }
-    }
+    console.log("AI Parsed Response:", parsed);
 
     // Save conversation (limit to last 12 messages = 6 exchanges)
     const updatedHistory = [
@@ -296,7 +249,7 @@ export const geminiReply = async (msg, userName, sessionHistory = [], context = 
     return {
       intent: "GENERAL_CHAT",
       reply: `I'm here with you, ${userName}. Let's keep talking. 💜`,
-      action: { type: "none", target: null, buttons: null, resources: null },
+      action: { type: "none", target: null, buttons: null },
       mood_detected: null,
       follow_up_suggestion: "How are you feeling right now?",
     };
