@@ -57,8 +57,4 @@ app.use("/api/admin", adminRoute);
 app.use('/api/transactions', protect, walletTransactionsRoute);
 app.use("/api/chat", chatRoutes); // Chat route now has access to req.session
 
-app.get("/", (req, res) => {
-  res.send("ES Module Backend Running with Sessions");
-});
-
 export default app;

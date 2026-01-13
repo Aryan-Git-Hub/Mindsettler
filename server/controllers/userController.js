@@ -135,15 +135,24 @@ export const getMe = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const cookieOptions = {
-      expires: new Date(Date.now()),
+      expires: new Date(0), // Expire the cookie immediately
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       path: "/",
     };
-    res.cookie("token", null, cookieOptions).status(200).json({
+
+    // Prevent caching of the logout response
+    res.header(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    res.header("Pragma", "no-cache");
+    res.header("Expires", "0");
+
+    res.cookie("token", "", cookieOptions).status(200).json({
       success: true,
-      message: "Logged out successfully"
+      message: "Logged out successfully",
     });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
