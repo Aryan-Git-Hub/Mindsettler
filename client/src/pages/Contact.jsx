@@ -21,47 +21,137 @@ import Footer from "../components/common/Footer";
 import API from "../api/axios";
 import FAQSection from "../components/common/FAQ";
 
-// Floating particles background
-const FloatingElements = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(15)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute rounded-full"
+// Bubble Animation Background Component
+const BubbleBackground = () => {
+  const bubbles = [
+    // Large bubbles
+    { size: 280, x: "5%", y: "8%", opacity: 0.15, color: "purple", delay: 0 },
+    { size: 320, x: "75%", y: "5%", opacity: 0.12, color: "pink", delay: 0.5 },
+    { size: 250, x: "85%", y: "25%", opacity: 0.18, color: "purple", delay: 1 },
+    { size: 300, x: "-5%", y: "35%", opacity: 0.14, color: "pink", delay: 1.5 },
+    { size: 280, x: "70%", y: "45%", opacity: 0.16, color: "purple", delay: 2 },
+    { size: 260, x: "10%", y: "55%", opacity: 0.13, color: "pink", delay: 0.3 },
+    { size: 290, x: "80%", y: "65%", opacity: 0.15, color: "purple", delay: 0.8 },
+    { size: 270, x: "0%", y: "75%", opacity: 0.17, color: "pink", delay: 1.2 },
+    { size: 310, x: "65%", y: "85%", opacity: 0.14, color: "purple", delay: 1.8 },
+
+    // Medium bubbles
+    { size: 180, x: "30%", y: "12%", opacity: 0.12, color: "pink", delay: 0.2 },
+    { size: 160, x: "55%", y: "20%", opacity: 0.14, color: "purple", delay: 0.7 },
+    { size: 200, x: "20%", y: "30%", opacity: 0.11, color: "pink", delay: 1.1 },
+    { size: 170, x: "45%", y: "42%", opacity: 0.13, color: "purple", delay: 0.4 },
+    { size: 190, x: "60%", y: "55%", opacity: 0.15, color: "pink", delay: 0.9 },
+    { size: 175, x: "35%", y: "68%", opacity: 0.12, color: "purple", delay: 1.4 },
+    { size: 185, x: "50%", y: "78%", opacity: 0.14, color: "pink", delay: 1.7 },
+    { size: 165, x: "25%", y: "88%", opacity: 0.11, color: "purple", delay: 2.1 },
+
+    // Small bubbles
+    { size: 100, x: "15%", y: "18%", opacity: 0.1, color: "purple", delay: 0.1 },
+    { size: 90, x: "40%", y: "8%", opacity: 0.12, color: "pink", delay: 0.6 },
+    { size: 110, x: "68%", y: "32%", opacity: 0.09, color: "purple", delay: 1.3 },
+    { size: 95, x: "8%", y: "48%", opacity: 0.11, color: "pink", delay: 0.5 },
+    { size: 105, x: "90%", y: "52%", opacity: 0.1, color: "purple", delay: 1.6 },
+    { size: 85, x: "42%", y: "62%", opacity: 0.12, color: "pink", delay: 1.9 },
+    { size: 115, x: "78%", y: "72%", opacity: 0.08, color: "purple", delay: 2.2 },
+    { size: 92, x: "18%", y: "82%", opacity: 0.11, color: "pink", delay: 0.8 },
+    { size: 88, x: "55%", y: "92%", opacity: 0.1, color: "purple", delay: 1.0 },
+  ];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Main bubbles */}
+      {bubbles.map((bubble, index) => (
+        <motion.div
+          key={index}
+          className="absolute rounded-full"
+          style={{
+            width: bubble.size,
+            height: bubble.size,
+            left: bubble.x,
+            top: bubble.y,
+            background:
+              bubble.color === "purple"
+                ? `radial-gradient(circle at 30% 30%, rgba(139, 92, 246, ${bubble.opacity + 0.05}), rgba(63, 41, 101, ${bubble.opacity}))`
+                : `radial-gradient(circle at 30% 30%, rgba(251, 207, 232, ${bubble.opacity + 0.1}), rgba(221, 23, 100, ${bubble.opacity}))`,
+            filter: "blur(1px)",
+          }}
+          initial={{
+            scale: 0.8,
+            opacity: 0,
+          }}
+          animate={{
+            scale: [0.95, 1.05, 0.95],
+            opacity: [bubble.opacity * 0.8, bubble.opacity, bubble.opacity * 0.8],
+            x: [0, 10, -10, 0],
+            y: [0, -15, 5, 0],
+          }}
+          transition={{
+            duration: 8 + index * 0.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: bubble.delay,
+          }}
+        />
+      ))}
+
+      {/* Extra floating small bubbles for depth */}
+      {[...Array(15)].map((_, i) => (
+        <motion.div
+          key={`small-${i}`}
+          className="absolute rounded-full"
+          style={{
+            width: 40 + Math.random() * 60,
+            height: 40 + Math.random() * 60,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            background:
+              i % 2 === 0
+                ? `radial-gradient(circle at 30% 30%, rgba(167, 139, 250, 0.15), rgba(139, 92, 246, 0.08))`
+                : `radial-gradient(circle at 30% 30%, rgba(251, 207, 232, 0.18), rgba(244, 114, 182, 0.1))`,
+          }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.2, 0.1],
+            y: [0, -20, 0],
+          }}
+          transition={{
+            duration: 6 + Math.random() * 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: Math.random() * 3,
+          }}
+        />
+      ))}
+
+      {/* Soft gradient overlay */}
+      <div
+        className="absolute inset-0"
         style={{
-          width: Math.random() * 10 + 5,
-          height: Math.random() * 10 + 5,
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          background: i % 2 === 0 ? "rgba(63, 41, 101, 0.1)" : "rgba(221, 23, 100, 0.1)",
-        }}
-        animate={{
-          y: [0, -30, 0],
-          x: [0, Math.random() * 20 - 10, 0],
-          opacity: [0.3, 0.7, 0.3],
-        }}
-        transition={{
-          duration: 4 + Math.random() * 2,
-          repeat: Infinity,
-          delay: Math.random() * 2,
+          background: `
+            radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.4) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 80%, rgba(255,255,255,0.3) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 70%)
+          `,
         }}
       />
-    ))}
-  </div>
-);
+    </div>
+  );
+};
 
 // Contact Info Card Component
-const ContactCard = ({ icon, title, detail, description, color, delay, onClick }) => (
-  <motion.div
+const ContactCard = ({ icon, title, detail, description, color, delay, href, isExternal }) => (
+  <motion.a
+    href={href}
+    target={isExternal ? "_blank" : "_self"}
+    rel={isExternal ? "noopener noreferrer" : ""}
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ delay, duration: 0.5 }}
     whileHover={{ y: -8, scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
-    onClick={onClick}
     className={`
-      relative overflow-hidden cursor-pointer
+      relative overflow-hidden cursor-pointer block
       p-5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl
       bg-white/80 backdrop-blur-sm
       border border-white/50
@@ -75,9 +165,10 @@ const ContactCard = ({ icon, title, detail, description, color, delay, onClick }
       className={`
         absolute inset-0 opacity-0 group-hover:opacity-100
         transition-opacity duration-300
-        ${color === "pink" 
-          ? "bg-linear-to-br from-[#DD1764]/5 to-transparent" 
-          : "bg-linear-to-br from-[#3F2965]/5 to-transparent"
+        ${
+          color === "pink"
+            ? "bg-gradient-to-br from-[#DD1764]/5 to-transparent"
+            : "bg-gradient-to-br from-[#3F2965]/5 to-transparent"
         }
       `}
     />
@@ -88,9 +179,10 @@ const ContactCard = ({ icon, title, detail, description, color, delay, onClick }
         relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl
         flex items-center justify-center mb-4
         transition-transform duration-300 group-hover:scale-110
-        ${color === "pink"
-          ? "bg-linear-to-br from-[#DD1764]/10 to-[#DD1764]/5 text-[#DD1764]"
-          : "bg-linear-to-br from-[#3F2965]/10 to-[#3F2965]/5 text-[#3F2965]"
+        ${
+          color === "pink"
+            ? "bg-gradient-to-br from-[#DD1764]/10 to-[#DD1764]/5 text-[#DD1764]"
+            : "bg-gradient-to-br from-[#3F2965]/10 to-[#3F2965]/5 text-[#3F2965]"
         }
       `}
     >
@@ -101,9 +193,11 @@ const ContactCard = ({ icon, title, detail, description, color, delay, onClick }
     <h3 className="relative font-bold text-base sm:text-lg text-[#3F2965] mb-1">
       {title}
     </h3>
-    <p className={`relative text-sm sm:text-base font-semibold mb-1 ${
-      color === "pink" ? "text-[#DD1764]" : "text-[#3F2965]/80"
-    }`}>
+    <p
+      className={`relative text-sm sm:text-base font-semibold mb-1 ${
+        color === "pink" ? "text-[#DD1764]" : "text-[#3F2965]/80"
+      }`}
+    >
       {detail}
     </p>
     {description && (
@@ -114,9 +208,12 @@ const ContactCard = ({ icon, title, detail, description, color, delay, onClick }
 
     {/* Arrow indicator */}
     <div className="absolute top-5 right-5 sm:top-6 sm:right-6 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-      <ArrowRight size={18} className={color === "pink" ? "text-[#DD1764]" : "text-[#3F2965]"} />
+      <ArrowRight
+        size={18}
+        className={color === "pink" ? "text-[#DD1764]" : "text-[#3F2965]"}
+      />
     </div>
-  </motion.div>
+  </motion.a>
 );
 
 // Input Component
@@ -127,14 +224,14 @@ const FormInput = ({ label, error, ...props }) => (
       {props.required && <span className="text-[#DD1764] ml-0.5">*</span>}
     </label>
     <div className="relative group">
-      <div className="absolute -inset-0.5 bg-linear-to-r from-[#3F2965] to-[#DD1764] rounded-xl sm:rounded-2xl opacity-0 group-focus-within:opacity-10 blur transition-opacity duration-300" />
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#3F2965] to-[#DD1764] rounded-xl sm:rounded-2xl opacity-0 group-focus-within:opacity-10 blur transition-opacity duration-300" />
       {props.as === "textarea" ? (
         <textarea
           {...props}
           className={`
             relative w-full p-3.5 sm:p-4
-            bg-[#F8F6F3]/80 hover:bg-[#F8F6F3]
-            border-2 border-transparent
+            bg-white/80 hover:bg-white
+            border-2 border-[#3F2965]/10
             focus:border-[#3F2965]/20 focus:bg-white
             rounded-xl sm:rounded-2xl
             outline-none transition-all duration-300
@@ -148,8 +245,8 @@ const FormInput = ({ label, error, ...props }) => (
           {...props}
           className={`
             relative w-full p-3.5 sm:p-4
-            bg-[#F8F6F3]/80 hover:bg-[#F8F6F3]
-            border-2 border-transparent
+            bg-white/80 hover:bg-white
+            border-2 border-[#3F2965]/10
             focus:border-[#3F2965]/20 focus:bg-white
             rounded-xl sm:rounded-2xl
             outline-none transition-all duration-300
@@ -191,7 +288,7 @@ const SuccessModal = ({ isOpen, onClose }) => (
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", delay: 0.2 }}
-            className="w-20 h-20 mx-auto mb-5 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30"
+            className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30"
           >
             <CheckCircle size={40} className="text-white" />
           </motion.div>
@@ -205,7 +302,7 @@ const SuccessModal = ({ isOpen, onClose }) => (
 
           <button
             onClick={onClose}
-            className="w-full py-3 bg-linear-to-r from-[#3F2965] to-[#5a3d8a] text-white font-bold rounded-xl hover:opacity-90 transition-opacity"
+            className="w-full py-3 bg-gradient-to-r from-[#3F2965] to-[#5a3d8a] text-white font-bold rounded-xl hover:opacity-90 transition-opacity"
           >
             Got it!
           </button>
@@ -250,56 +347,73 @@ const ContactPage = () => {
     }
   };
 
+  // Contact info with actual links
   const contactInfo = [
     {
       icon: <Phone />,
       title: "Call Us",
-      detail: "+1 (234) 567-890",
+      detail: "+91 9974631313",
       description: "Mon-Fri, 9am-6pm",
       color: "purple",
+      href: "tel:+919974631313",
+      isExternal: false,
     },
     {
       icon: <MessageCircle />,
       title: "WhatsApp",
-      detail: "+1 (234) 567-891",
+      detail: "+91 9974631313",
       description: "Quick responses",
       color: "purple",
+      href: "https://wa.me/919974631313?text=Hi%20MindSettler%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services.",
+      isExternal: true,
     },
     {
       icon: <Mail />,
       title: "Email",
-      detail: "support@mindsettler.com",
+      detail: "contact@mindsettler.com",
       description: "We reply within 24h",
       color: "purple",
+      href: "mailto:contact@mindsettler.com?subject=Inquiry%20from%20Website",
+      isExternal: false,
     },
     {
       icon: <Instagram />,
       title: "Instagram",
-      detail: "@mindsettler_official",
+      detail: "@mindsettlerbypb",
       description: "Follow for updates",
       color: "pink",
+      href: "https://www.instagram.com/mindsettlerbypb?igsh=MTdkeXcxaHd5dG50Ng==",
+      isExternal: true,
     },
   ];
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-linear-to-b from-slate-50 via-white to-[#fdfcf8] font-sans text-[#3F2965]">
-        
+      <div
+        className="min-h-screen font-sans text-[#3F2965] relative"
+        style={{
+          background: `linear-gradient(135deg, 
+            #faf5ff 0%, 
+            #f5f0ff 20%,
+            #fdf2f8 40%, 
+            #fce7f3 60%,
+            #f3e8ff 80%,
+            #faf5ff 100%
+          )`,
+        }}
+      >
+        {/* Bubble Animation Background */}
+        <BubbleBackground />
+
         {/* === HERO SECTION === */}
         <section className="relative pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-20 lg:pb-28 px-4 overflow-hidden">
-          <FloatingElements />
-
-          {/* Background decorations */}
-          <div className="absolute top-20 left-0 w-72 h-72 bg-[#3F2965]/5 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-0 w-96 h-96 bg-[#DD1764]/5 rounded-full blur-3xl" />
-
-          <div className="relative max-w-4xl mx-auto text-center">
+          <div className="relative max-w-4xl mx-auto text-center z-10">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-white/50 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/50 mb-6"
             >
               <Heart size={14} className="text-[#DD1764]" />
               <span className="text-xs sm:text-sm font-semibold text-[#3F2965]">
@@ -315,7 +429,7 @@ const ContactPage = () => {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6"
             >
               Let's Start a{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965]">
                 Conversation
               </span>
             </motion.h1>
@@ -345,10 +459,12 @@ const ContactPage = () => {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 text-[#3F2965]/50"
+                  className="flex items-center gap-2 text-[#3F2965]/60 bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full"
                 >
                   <item.icon size={16} className="text-[#DD1764]" />
-                  <span className="text-xs sm:text-sm font-medium">{item.text}</span>
+                  <span className="text-xs sm:text-sm font-medium">
+                    {item.text}
+                  </span>
                 </div>
               ))}
             </motion.div>
@@ -356,10 +472,9 @@ const ContactPage = () => {
         </section>
 
         {/* === MAIN CONTENT === */}
-        <section className="relative px-4 sm:px-6 pb-16 sm:pb-20 lg:pb-28">
+        <section className="relative px-4 sm:px-6 pb-16 sm:pb-20 lg:pb-28 z-10">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-              
               {/* === LEFT: CONTACT CARDS === */}
               <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 {/* Section title - Mobile only */}
@@ -375,11 +490,7 @@ const ContactPage = () => {
                 {/* Contact cards grid */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   {contactInfo.map((item, index) => (
-                    <ContactCard
-                      key={index}
-                      {...item}
-                      delay={index * 0.1}
-                    />
+                    <ContactCard key={index} {...item} delay={index * 0.1} />
                   ))}
                 </div>
 
@@ -389,7 +500,7 @@ const ContactPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 }}
-                  className="relative overflow-hidden p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-linear-to-br from-[#3F2965] to-[#5a3d8a] text-white"
+                  className="relative overflow-hidden p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#3F2965] to-[#5a3d8a] text-white"
                 >
                   {/* Decorative circles */}
                   <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
@@ -406,16 +517,78 @@ const ContactPage = () => {
                       Need Urgent Help?
                     </h3>
                     <p className="text-sm text-white/70 mb-4 leading-relaxed">
-                      Our support team is available for emergencies. Don't hesitate to reach out.
+                      Our support team is available for emergencies. Don't
+                      hesitate to reach out.
                     </p>
                     <a
-                      href="tel:+1234567890"
+                      href="tel:+919974631313"
                       className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-[#3F2965] font-bold text-sm rounded-xl hover:bg-white/90 transition-colors"
                     >
                       <Phone size={16} />
                       Call Now
                     </a>
                   </div>
+                </motion.div>
+
+                {/* Social Connect Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                  className="relative overflow-hidden p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 backdrop-blur-sm border border-white/50 shadow-lg"
+                >
+                  <h3 className="text-lg font-bold text-[#3F2965] mb-4">
+                    Connect With Us
+                  </h3>
+                  <div className="flex gap-3">
+                    {/* WhatsApp */}
+                    <motion.a
+                      href="https://wa.me/919974631313?text=Hi%20MindSettler%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shadow-lg shadow-green-500/30"
+                    >
+                      <MessageCircle size={22} />
+                    </motion.a>
+
+                    {/* Instagram */}
+                    <motion.a
+                      href="https://www.instagram.com/mindsettlerbypb?igsh=MTdkeXcxaHd5dG50Ng=="
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+                    >
+                      <Instagram size={22} />
+                    </motion.a>
+
+                    {/* Email */}
+                    <motion.a
+                      href="mailto:contact@mindsettler.com?subject=Inquiry%20from%20Website"
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#3F2965] to-[#5a3d8a] flex items-center justify-center text-white shadow-lg shadow-purple-500/30"
+                    >
+                      <Mail size={22} />
+                    </motion.a>
+
+                    {/* Phone */}
+                    <motion.a
+                      href="tel:+919974631313"
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#DD1764] to-[#e83d7f] flex items-center justify-center text-white shadow-lg shadow-pink-500/30"
+                    >
+                      <Phone size={22} />
+                    </motion.a>
+                  </div>
+                  <p className="text-xs text-[#3F2965]/50 mt-4">
+                    Click any icon to connect instantly
+                  </p>
                 </motion.div>
               </div>
 
@@ -429,7 +602,7 @@ const ContactPage = () => {
               >
                 <div className="relative bg-white/80 backdrop-blur-sm p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl lg:rounded-[40px] shadow-xl border border-white/50">
                   {/* Decorative gradient */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965] rounded-t-3xl" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965] rounded-t-3xl" />
 
                   {/* Form header */}
                   <div className="mb-6 sm:mb-8">
@@ -510,8 +683,8 @@ const ContactPage = () => {
                       whileTap={{ scale: 0.99 }}
                       className={`
                         relative w-full py-4 sm:py-4.5
-                        bg-linear-to-r from-[#DD1764] via-[#e83d7f] to-[#DD1764]
-                        bg-size-[200%_100%] bg-left hover:bg-right
+                        bg-gradient-to-r from-[#DD1764] via-[#e83d7f] to-[#DD1764]
+                        bg-[length:200%_100%] bg-left hover:bg-right
                         text-white font-bold text-sm sm:text-base
                         rounded-xl sm:rounded-2xl
                         transition-all duration-500
@@ -523,14 +696,17 @@ const ContactPage = () => {
                       `}
                     >
                       {/* Shine effect */}
-                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
                       {loading ? (
                         <Loader2 className="animate-spin" size={20} />
                       ) : (
                         <>
                           <span>Send Message</span>
-                          <Send size={18} className="group-hover:translate-x-1 transition-transform" />
+                          <Send
+                            size={18}
+                            className="group-hover:translate-x-1 transition-transform"
+                          />
                         </>
                       )}
                     </motion.button>
@@ -551,7 +727,7 @@ const ContactPage = () => {
         </section>
 
         {/* === TESTIMONIALS STRIP === */}
-        <section className="py-12 sm:py-16 bg-linear-to-r from-[#3F2965]/5 via-transparent to-[#DD1764]/5">
+        <section className="relative py-12 sm:py-16 z-10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -591,7 +767,7 @@ const ContactPage = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-white/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl border border-white/50 shadow-sm"
+                  className="bg-white/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl border border-white/50 shadow-lg"
                 >
                   {/* Stars */}
                   <div className="flex gap-1 mb-3">
@@ -620,7 +796,12 @@ const ContactPage = () => {
       </div>
 
       {/* Gradient spacer */}
-      <div className="h-20 sm:h-32 bg-linear-to-b from-[#fdfcf8] to-white" />
+      <div
+        className="h-20 sm:h-32"
+        style={{
+          background: `linear-gradient(180deg, #faf5ff 0%, #fdfcf8 100%)`,
+        }}
+      />
 
       {/* FAQ Section */}
       <FAQSection />
