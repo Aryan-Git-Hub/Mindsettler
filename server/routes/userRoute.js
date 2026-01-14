@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import { userSignup, login, forgotPassword, getMe, logout, sendContactEmail, profileUpdate } from "../controllers/userController.js";
+import { userSignup, login, forgotPassword, getMe, logout, sendContactEmail, profileUpdate, sendCorporateEmail } from "../controllers/userController.js";
 import { protect } from "../middlewares/userMiddleware.js";
 import { validate } from "../middlewares/validationMiddleware.js";
 
@@ -44,6 +44,7 @@ router.get("/logout", protect, logout);
 
 router.get("/me", protect, getMe);
 router.post("/contact/send", sendContactEmail);
+router.post("/corporate/send", sendCorporateEmail);
 router.patch("/profile", protect,
   [
     body("name")

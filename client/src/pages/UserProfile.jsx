@@ -163,7 +163,6 @@ const WalletView = ({ user }) => {
   const [transactions, setTransactions] = useState([]);
   const [formData, setFormData] = useState({ amount: "", transactionId: "" });
 
-
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -356,10 +355,15 @@ const WalletView = ({ user }) => {
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleTopup} className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5">
+            <form
+              onSubmit={handleTopup}
+              className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5"
+            >
               <div className="bg-amber-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex gap-2 sm:gap-3 items-start text-amber-800 text-[10px] sm:text-[11px] font-medium leading-relaxed">
                 <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                <span>Transfer to UPI first, then enter the 12-digit UTR below.</span>
+                <span>
+                  Transfer to UPI first, then enter the 12-digit UTR below.
+                </span>
               </div>
               <input
                 type="number"
@@ -428,6 +432,7 @@ const MyBookingsView = () => {
 
   const getGoogleCalendarLink = (session) => {
     if (!session?.availabilityRef?.date || !session?.timeSlot) return "#";
+
     const base = "https://www.google.com/calendar/render?action=TEMPLATE";
     const title = `&text=${encodeURIComponent(
       "MindSettler: " + (session.therapyType || "Therapy Session")
@@ -438,17 +443,39 @@ const MyBookingsView = () => {
     const location = session.meetLink
       ? `&location=${encodeURIComponent(session.meetLink)}`
       : "";
+
+    // Explicitly set the timezone to Asia/Kolkata for Google Calendar
+    const timezone = `&ctz=Asia/Kolkata`;
+
     try {
-      const startDateTime = new Date(
-        `${session.availabilityRef.date}T${session.timeSlot}:00`
-      );
-      const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
-      const formatGCalDate = (date) =>
-        date.toISOString().replace(/-|:|\.\d\d\d/g, "");
-      const dates = `&dates=${formatGCalDate(startDateTime)}/${formatGCalDate(
-        endDateTime
-      )}`;
-      return `${base}${title}${dates}${details}${location}`;
+      // 1. Combine Date and Time strings
+      const dateStr = session.availabilityRef.date; // e.g., "2026-01-14"
+      const timeStr = session.timeSlot; // e.g., "14:30" (2:30 PM)
+
+      // 2. Parse as IST by manually creating the date components
+      // We avoid 'new Date(string)' here to prevent local system timezone interference
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const [hours, minutes] = timeStr.split(":").map(Number);
+
+      // Create a date object in the user's current environment
+      const start = new Date(year, month - 1, day, hours, minutes);
+      const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 Hour
+
+      // 3. Format function for Google Calendar (YYYYMMDDTHHMMSS)
+      // We do NOT use .toISOString() here because that converts to UTC.
+      // GCal accepts "floating" time if we don't append 'Z'.
+      const formatGCalDate = (date) => {
+        const pad = (num) => String(num).padStart(2, "0");
+        return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(
+          date.getDate()
+        )}T${pad(date.getHours())}${pad(date.getMinutes())}${pad(
+          date.getSeconds()
+        )}`;
+      };
+
+      const dates = `&dates=${formatGCalDate(start)}/${formatGCalDate(end)}`;
+
+      return `${base}${title}${dates}${details}${location}${timezone}`;
     } catch (error) {
       console.error("Error generating Calendar Link:", error);
       return "#";
@@ -466,7 +493,9 @@ const MyBookingsView = () => {
     <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-2">
-        <h2 className="text-xl sm:text-2xl font-black text-[#3F2965]">My Journey</h2>
+        <h2 className="text-xl sm:text-2xl font-black text-[#3F2965]">
+          My Journey
+        </h2>
         <div className="px-3 sm:px-4 py-1.5 bg-[#3F2965]/5 rounded-full self-start sm:self-auto">
           <p className="text-[9px] sm:text-[10px] font-black text-[#3F2965] uppercase tracking-wider">
             Total: {sessions.length} Sessions
@@ -477,7 +506,9 @@ const MyBookingsView = () => {
       {sessions.length === 0 ? (
         <div className="py-12 sm:py-20 text-center bg-white rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 shadow-inner">
           <CalendarCheck className="mx-auto text-slate-200 mb-4" size={40} />
-          <p className="text-slate-400 font-bold text-sm">No sessions scheduled yet.</p>
+          <p className="text-slate-400 font-bold text-sm">
+            No sessions scheduled yet.
+          </p>
           <Link
             to="/booking"
             className="mt-4 inline-block text-xs font-black text-[#Dd1764] uppercase tracking-widest hover:scale-105 transition-all"
@@ -505,19 +536,25 @@ const MyBookingsView = () => {
               <div className="flex justify-between items-start mb-4 sm:mb-6 pr-16 sm:pr-20">
                 <div
                   className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${
-                    session.status === "approved"
-                      ? "bg-green-50 text-green-600"
-                      : "bg-pink-50 text-[#Dd1764]"
+                    session.status === "confirmed"
+                      ? "bg-green-100 text-green-700"
+                      : session.status === "completed"
+                      ? "bg-blue-50 text-blue-600"
+                      : session.status === "rejected"
+                      ? "bg-red-50 text-red-600"
+                      : "bg-amber-50 text-amber-600"
                   }`}
                 >
                   <Clock size={18} />
                 </div>
                 <span
-                  className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${
-                    session.status === "approved"
+                  className={`px-2 sm:px-4 mt-2 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${
+                    session.status === "confirmed"
                       ? "bg-green-100 text-green-700"
                       : session.status === "completed"
                       ? "bg-blue-50 text-blue-600"
+                      : session.status === "rejected"
+                      ? "bg-red-50 text-red-600"
                       : "bg-amber-50 text-amber-600"
                   }`}
                 >
@@ -642,7 +679,14 @@ const MyBookingsView = () => {
 };
 
 // --- MOBILE SIDEBAR COMPONENT ---
-const MobileSidebar = ({ isOpen, onClose, menuItems, activeTab, setActiveTab, onLogout }) => {
+const MobileSidebar = ({
+  isOpen,
+  onClose,
+  menuItems,
+  activeTab,
+  setActiveTab,
+  onLogout,
+}) => {
   return (
     <>
       {/* Overlay */}
@@ -725,9 +769,7 @@ const BottomNavigation = ({ menuItems, activeTab, setActiveTab }) => {
               href={`#${encodeURIComponent(item.name)}`}
               onClick={() => setActiveTab(item.name)}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all min-w-15 ${
-                isActive
-                  ? "text-[#Dd1764] bg-pink-50"
-                  : "text-slate-400"
+                isActive ? "text-[#Dd1764] bg-pink-50" : "text-slate-400"
               }`}
             >
               <Icon size={20} />
@@ -748,13 +790,13 @@ const UserDashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  
+
   const menuItems = [
     { name: "Profile", icon: User },
     { name: "My Wallet", icon: Wallet },
     { name: "My Bookings", icon: CalendarCheck },
   ];
-  
+
   useEffect(() => {
     const syncTabFromHash = () => {
       const hash = decodeURIComponent(window.location.hash.replace("#", ""));
@@ -765,7 +807,7 @@ const UserDashboard = () => {
     window.addEventListener("hashchange", syncTabFromHash);
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
-  
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -777,8 +819,8 @@ const UserDashboard = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
-  
-  if (!user || user.role !== "user") return (<Navigate to="/auth" />);
+
+  if (!user || user.role !== "user") return <Navigate to="/auth" />;
 
   const handleLogout = useCallback(() => {
     setIsMobileMenuOpen(false);

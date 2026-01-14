@@ -219,3 +219,21 @@ export const flushAvailability = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const updateMeetLink = async (req, res) => {
+  try {
+    const { meetLink } = req.body;
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment)
+      return res.status(404).json({ message: "Appointment not found" });
+
+    appointment.meetLink = meetLink;
+    await appointment.save();
+    res.status(200).json({ success: true, data: appointment });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

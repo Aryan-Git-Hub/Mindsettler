@@ -1,5 +1,5 @@
 import express from 'express';
-import { bookSession, updateStatus, getMyAppointments, getAvailability, deleteAvailability, flushAvailability } from '../controllers/appointmentController.js';
+import { bookSession, updateStatus, getMyAppointments, getAvailability, deleteAvailability, flushAvailability, updateMeetLink } from '../controllers/appointmentController.js';
 import { protect } from '../middlewares/userMiddleware.js';
 import { admin } from '../middlewares/adminMiddleware.js';
 import { body, validationResult } from 'express-validator';
@@ -39,4 +39,6 @@ router.get('/my-sessions', getMyAppointments);
 router.get('/get-availability', getAvailability);
 router.delete('/delete-availability/:id', admin, deleteAvailability);
 router.delete('/flush-availability', admin, flushAvailability);
+router.put('/meet-link-update/:id', admin, updateMeetLink);
+
 export default router;

@@ -28,7 +28,8 @@ import {
   AlertCircle,
   Menu,
   MapPin,
-  ChevronRight,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -115,7 +116,10 @@ const AdminProfileView = ({ user, setUser }) => {
         {/* Form Card */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
           <div className="bg-white p-4 sm:p-6 lg:p-10 rounded-2xl sm:rounded-[2.5rem] border shadow-sm">
-            <form onSubmit={handleUpdateProfile} className="space-y-4 sm:space-y-6">
+            <form
+              onSubmit={handleUpdateProfile}
+              className="space-y-4 sm:space-y-6"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-1.5 sm:space-y-2">
                   <label className="text-[10px] sm:text-xs font-black text-slate-400 uppercase ml-1">
@@ -403,6 +407,10 @@ const AppointmentsView = () => {
   const [modalError, setModalError] = useState("");
   const [tableError, setTableError] = useState("");
 
+  // Meet Link specific states
+  const [meetLink, setMeetLink] = useState("");
+  const [isEditingLink, setIsEditingLink] = useState(false);
+
   useEffect(() => {
     API.get("/admin/pending-appointments")
       .then((res) => {
@@ -414,6 +422,14 @@ const AppointmentsView = () => {
         setLoading(false);
       });
   }, []);
+
+  // Sync meetLink state when a modal is opened
+  useEffect(() => {
+    if (selectedApp) {
+      setMeetLink(selectedApp.meetLink || "");
+      setIsEditingLink(false);
+    }
+  }, [selectedApp]);
 
   const updateStatus = async (id, status) => {
     setActionId(id);
@@ -432,6 +448,34 @@ const AppointmentsView = () => {
       } else {
         setTableError(errorText);
       }
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const saveMeetLink = async () => {
+    if (!selectedApp) return;
+    setActionId(selectedApp._id);
+    setModalError("");
+
+    try {
+      // Endpoint to update only the meet link
+      await API.put(`/appointment/meet-link-update/${selectedApp._id}`, {
+        meetLink,
+      });
+
+      // Update local state so the table/list reflects the new link
+      setAppointments((prev) =>
+        prev.map((app) =>
+          app._id === selectedApp._id ? { ...app, meetLink } : app
+        )
+      );
+      setSelectedApp((prev) => ({ ...prev, meetLink }));
+      setIsEditingLink(false);
+    } catch (e) {
+      setModalError(
+        e.response?.data?.message || "Failed to save meeting link."
+      );
     } finally {
       setActionId(null);
     }
@@ -495,7 +539,6 @@ const AppointmentsView = () => {
                   <td className="p-4 lg:p-5 text-sm font-bold text-slate-400">
                     {idx + 1}
                   </td>
-
                   <td className="p-4 lg:p-5">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
@@ -503,37 +546,31 @@ const AppointmentsView = () => {
                           {app.user?.name}
                         </p>
                         <button
-                          onClick={() => {
-                            setSelectedApp(app);
-                            setModalError("");
-                          }}
+                          onClick={() => setSelectedApp(app)}
                           className="p-1 rounded-full hover:bg-slate-200 text-slate-400 transition-colors"
                           title="View Details"
                         >
                           <Info size={14} />
                         </button>
+                        {app.meetLink && (
+                          <Link2
+                            size={12}
+                            className="text-blue-500"
+                            title="Link assigned"
+                          />
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-500">
-                        <Mail size={12} />
-                        <span className="text-[11px] font-medium">
-                          {app.user?.email}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[#Dd1764]">
-                        <Phone size={12} />
-                        <span className="text-[11px] font-bold">
-                          {app.user?.phone || "N/A"}
-                        </span>
+                      <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-medium">
+                        <Mail size={12} /> {app.user?.email}
                       </div>
                     </div>
                   </td>
-
-                  <td className="p-4 lg:p-5">
+                  <td className="p-4 lg:p-5 text-center">
                     <div className="flex justify-center gap-2">
                       <button
                         disabled={actionId === app._id}
                         onClick={() => updateStatus(app._id, "rejected")}
-                        className="px-3 sm:px-4 py-2 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all disabled:opacity-50"
+                        className="px-4 py-2 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all"
                       >
                         {actionId === app._id ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -544,7 +581,7 @@ const AppointmentsView = () => {
                       <button
                         disabled={actionId === app._id}
                         onClick={() => updateStatus(app._id, "completed")}
-                        className="px-3 sm:px-4 py-2 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-all disabled:opacity-50"
+                        className="px-4 py-2 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-all"
                       >
                         {actionId === app._id ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -561,176 +598,129 @@ const AppointmentsView = () => {
         </table>
       </div>
 
-      {/* Mobile/Tablet Card View */}
+      {/* Mobile View */}
       <div className="lg:hidden space-y-3">
-        {appointments.length === 0 ? (
-          <div className="bg-white rounded-2xl border p-8 text-center">
-            <CalendarCheck className="mx-auto text-slate-200 mb-3" size={40} />
-            <p className="text-slate-400 font-bold text-sm">
-              No pending appointments
-            </p>
-          </div>
-        ) : (
-          appointments.map((app) => (
-            <div
-              key={app._id}
-              className="bg-white rounded-2xl border shadow-sm p-4 space-y-3"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-linear-to-tr from-[#3F2965] to-[#Dd1764] flex items-center justify-center text-white font-bold text-sm">
-                    {app.user?.name?.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">
-                      {app.user?.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 truncate max-w-37.5">
-                      {app.user?.email}
-                    </p>
-                  </div>
+        {appointments.map((app) => (
+          <div
+            key={app._id}
+            className="bg-white rounded-2xl border shadow-sm p-4 space-y-3"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-linear-to-tr from-[#3F2965] to-[#Dd1764] flex items-center justify-center text-white font-bold text-sm">
+                  {app.user?.name?.charAt(0)}
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedApp(app);
-                    setModalError("");
-                  }}
-                  className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors"
-                >
-                  <Info size={16} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-slate-50 rounded-xl p-2.5">
-                  <p className="text-[8px] font-black text-slate-400 uppercase">
-                    Type
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">
+                    {app.user?.name}
                   </p>
-                  <p className="text-xs font-bold text-[#3F2965] truncate">
-                    {app.therapyType}
-                  </p>
-                </div>
-                <div className="bg-slate-50 rounded-xl p-2.5">
-                  <p className="text-[8px] font-black text-slate-400 uppercase">
-                    Time
-                  </p>
-                  <p className="text-xs font-bold text-[#3F2965]">
-                    {app.timeSlot}
+                  <p className="text-[10px] text-slate-400">
+                    {app.user?.email}
                   </p>
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <button
-                  disabled={actionId === app._id}
-                  onClick={() => updateStatus(app._id, "rejected")}
-                  className="flex-1 py-2.5 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-50"
-                >
-                  {actionId === app._id ? (
-                    <Loader2 size={14} className="animate-spin mx-auto" />
-                  ) : (
-                    "Reject"
-                  )}
-                </button>
-                <button
-                  disabled={actionId === app._id}
-                  onClick={() => updateStatus(app._id, "completed")}
-                  className="flex-1 py-2.5 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md hover:bg-green-600 transition-all disabled:opacity-50"
-                >
-                  {actionId === app._id ? (
-                    <Loader2 size={14} className="animate-spin mx-auto" />
-                  ) : (
-                    "Complete"
-                  )}
-                </button>
-              </div>
+              <button
+                onClick={() => setSelectedApp(app)}
+                className="p-2 rounded-xl bg-slate-50 text-slate-400"
+              >
+                <Info size={16} />
+              </button>
             </div>
-          ))
-        )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => updateStatus(app._id, "rejected")}
+                className="flex-1 py-2.5 text-[10px] font-black uppercase text-red-600 bg-red-50 rounded-xl"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => updateStatus(app._id, "completed")}
+                className="flex-1 py-2.5 text-[10px] font-black uppercase text-white bg-green-500 rounded-xl shadow-md"
+              >
+                Complete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Appointment Details Modal */}
       {selectedApp && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-            {/* Header */}
+            {/* Modal Header */}
             <div className="p-4 sm:p-6 bg-slate-50 border-b flex justify-between items-center shrink-0">
               <div>
                 <h3 className="font-black text-[#3F2965] uppercase text-[10px] sm:text-xs tracking-widest">
                   Appointment Summary
                 </h3>
-                <p className="text-[9px] sm:text-xs font-bold text-slate-400 mt-0.5 truncate max-w-50">
+                <p className="text-[9px] sm:text-xs font-bold text-slate-400 mt-0.5">
                   ID: {selectedApp._id.toUpperCase()}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedApp(null)}
-                className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors"
+                className="p-2 hover:bg-slate-200 rounded-full text-slate-400"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Body */}
+            {/* Modal Body */}
             <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
               {modalError && (
-                <div className="p-3 sm:p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl sm:rounded-2xl flex items-center gap-2 text-[9px] sm:text-[10px] font-black uppercase animate-pulse">
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-[10px] font-black uppercase flex items-center gap-2">
                   <AlertCircle size={14} /> {modalError}
                 </div>
               )}
 
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="p-2.5 sm:p-3 bg-purple-50 text-[#3F2965] rounded-xl sm:rounded-2xl">
-                  <BrainCircuit size={18} />
+              {/* Therapy & Date Info */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-50 text-[#3F2965] rounded-2xl">
+                    <BrainCircuit size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-tighter">
+                      Therapy Mode
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {selectedApp.therapyType}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[9px] sm:text-[10px] font-black text-slate-300 uppercase tracking-tighter">
-                    Therapy Mode
-                  </p>
-                  <p className="text-xs sm:text-sm font-bold text-slate-700">
-                    {selectedApp.therapyType}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="p-2.5 sm:p-3 bg-blue-50 text-blue-600 rounded-xl sm:rounded-2xl">
-                  <CalendarIcon size={18} />
-                </div>
-                <div>
-                  <p className="text-[9px] sm:text-[10px] font-black text-slate-300 uppercase tracking-tighter">
-                    Date
-                  </p>
-                  <p className="text-xs sm:text-sm font-bold text-slate-700">
-                    {new Date(selectedApp.availabilityRef).toLocaleDateString(
-                      "en-US",
-                      {
-                        weekday: "short",
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      }
-                    )}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                    <CalendarIcon size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-tighter">
+                      Date
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {new Date(selectedApp.date).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="flex items-center gap-2 sm:gap-3">
+              {/* Time & Format */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
                   <div className="p-2 bg-pink-50 text-[#Dd1764] rounded-lg">
                     <Clock size={14} />
                   </div>
                   <div>
-                    <p className="text-[9px] sm:text-[10px] font-black text-slate-300 uppercase">
+                    <p className="text-[9px] font-black text-slate-300 uppercase">
                       Time
                     </p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-700">
+                    <p className="text-xs font-bold text-slate-700">
                       {selectedApp.timeSlot}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-2 bg-slate-100 text-slate-500 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-slate-100 rounded-lg">
                     {selectedApp.sessionType === "online" ? (
                       <Video size={14} />
                     ) : (
@@ -738,38 +728,105 @@ const AppointmentsView = () => {
                     )}
                   </div>
                   <div>
-                    <p className="text-[9px] sm:text-[10px] font-black text-slate-300 uppercase">
+                    <p className="text-[9px] font-black text-slate-300 uppercase">
                       Format
                     </p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-700 capitalize">
+                    <p className="text-xs font-bold text-slate-700 capitalize">
                       {selectedApp.sessionType}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100">
+              {/* MEET LINK SECTION (NEW) */}
+              <div className="bg-blue-50/50 p-4 sm:p-5 rounded-3xl border border-blue-100 animate-in fade-in slide-in-from-top-1">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Video size={14} />
+                    <p className="text-[9px] font-black uppercase tracking-widest">
+                      Session Link
+                    </p>
+                  </div>
+                  {!isEditingLink && (
+                    <button
+                      onClick={() => setIsEditingLink(true)}
+                      className="text-[9px] font-black uppercase text-blue-600 hover:underline"
+                    >
+                      Edit Link
+                    </button>
+                  )}
+                </div>
+
+                {isEditingLink ? (
+                  <div className="space-y-3">
+                    <input
+                      type="url"
+                      value={meetLink}
+                      onChange={(e) => setMeetLink(e.target.value)}
+                      placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                      className="w-full p-3 rounded-xl bg-white border border-blue-200 text-xs font-medium outline-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setIsEditingLink(false)}
+                        className="px-3 py-2 text-[9px] font-black uppercase text-slate-400 bg-white rounded-lg border"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveMeetLink}
+                        disabled={actionId === selectedApp._id}
+                        className="flex-1 px-3 py-2 text-[9px] font-black uppercase text-white bg-blue-600 rounded-lg flex items-center justify-center gap-2 shadow-md"
+                      >
+                        {actionId === selectedApp._id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <>
+                            <Check size={12} /> Save Link
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs sm:text-sm text-blue-900 font-bold truncate max-w-[200px]">
+                      {selectedApp.meetLink || "No link assigned yet"}
+                    </p>
+                    {selectedApp.meetLink && (
+                      <a
+                        href={selectedApp.meetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 bg-blue-600 text-white rounded-lg"
+                      >
+                        <ExternalLink size={14} />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Client Notes */}
+              <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
                 <div className="flex items-center gap-2 mb-2 text-[#3F2965]">
                   <MessageSquare size={12} />
-                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
+                  <p className="text-[9px] font-black uppercase tracking-widest">
                     Client Notes
                   </p>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                  "
-                  {selectedApp.notes ||
-                    "No additional notes provided by the client."}
-                  "
+                <p className="text-xs text-slate-600 italic">
+                  "{selectedApp.notes || "No additional notes provided."}"
                 </p>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 sm:p-6 bg-slate-50 border-t flex gap-2 sm:gap-3 shrink-0">
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-6 bg-slate-50 border-t flex gap-3 shrink-0">
               <button
                 disabled={actionId === selectedApp._id}
                 onClick={() => updateStatus(selectedApp._id, "rejected")}
-                className="flex-1 py-3 sm:py-4 bg-white border text-red-600 font-black text-[10px] uppercase rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
+                className="flex-1 py-4 bg-white border text-red-600 font-black text-[10px] uppercase rounded-xl"
               >
                 {actionId === selectedApp._id ? (
                   <Loader2 size={16} className="animate-spin mx-auto" />
@@ -780,7 +837,7 @@ const AppointmentsView = () => {
               <button
                 disabled={actionId === selectedApp._id}
                 onClick={() => updateStatus(selectedApp._id, "completed")}
-                className="flex-1 py-3 sm:py-4 bg-[#3F2965] text-white font-black text-[10px] uppercase rounded-xl shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="flex-1 py-4 bg-[#3F2965] text-white font-black text-[10px] uppercase rounded-xl shadow-lg"
               >
                 {actionId === selectedApp._id ? (
                   <Loader2 size={16} className="animate-spin mx-auto" />
@@ -789,9 +846,6 @@ const AppointmentsView = () => {
                 )}
               </button>
             </div>
-
-            {/* Safe area for mobile */}
-            <div className="h-4 sm:h-0 bg-slate-50" />
           </div>
         </div>
       )}
@@ -1011,7 +1065,9 @@ const TimeSlotsView = () => {
       {/* Slots Display */}
       <div className="space-y-2 sm:space-y-3">
         <p className="text-[9px] sm:text-[10px] font-black text-slate-300 uppercase tracking-widest">
-          {slots.length > 0 ? `Current Slots (${slots.length})` : "No slots added yet"}
+          {slots.length > 0
+            ? `Current Slots (${slots.length})`
+            : "No slots added yet"}
         </p>
         <div className="flex flex-wrap gap-2 sm:gap-3 p-4 sm:p-6 bg-slate-50 rounded-xl sm:rounded-2xl border-2 border-dashed min-h-20 sm:min-h-25">
           {slots.map((s) => (
@@ -1181,14 +1237,13 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
-  
   const navItems = [
     { name: "Profile", icon: UserCircle },
     { name: "Wallet Requests", icon: Wallet },
     { name: "Appointments", icon: CalendarCheck },
     { name: "Time Slots", icon: Clock },
   ];
-  
+
   useEffect(() => {
     const syncTabFromHash = () => {
       const hash = decodeURIComponent(window.location.hash.replace("#", ""));
@@ -1199,7 +1254,7 @@ const AdminDashboard = () => {
     window.addEventListener("hashchange", syncTabFromHash);
     return () => window.removeEventListener("hashchange", syncTabFromHash);
   }, []);
-  
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -1211,9 +1266,9 @@ const AdminDashboard = () => {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
-  
-  if (!user || user.role !== "admin") return (<Navigate to="/auth" replace />);
-  
+
+  if (!user || user.role !== "admin") return <Navigate to="/auth" replace />;
+
   const handleLogout = useCallback(() => {
     setIsMobileMenuOpen(false);
     navigate("/logout");

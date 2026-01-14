@@ -220,3 +220,54 @@ export const profileUpdate = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const sendCorporateEmail = async (req, res) => {
+  try {
+    const { companyName, contactPerson, workEmail, subject, message } = req.body;
+
+    // 1. Read the HTML template file
+    const templatePath = path.join(__dirname, "../templates/corporateEmail.html");
+    let htmlContent = fs.readFileSync(templatePath, "utf-8");
+
+    // 2. Replace placeholders with actual data
+    htmlContent = htmlContent
+      .replace(/{{companyName}}/g, companyName)
+      .replace(/{{contactPerson}}/g, contactPerson)
+      .replace(/{{workEmail}}/g, workEmail)
+      .replace(/{{subject}}/g, subject || "Corporate Inquiry")
+      .replace(/{{message}}/g, message)
+      .replace(/{{timestamp}}/g, new Date().toLocaleString());
+
+    // 3. Configure Transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.SENDER_PASSWORD, // Use Gmail App Password
+      },
+    });
+
+    // 4. Define Mail Options
+    const mailOptions = {
+      from: `"MindSettler Corporate" <${process.env.SENDER_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      replyTo: workEmail, // Direct reply to user
+      subject: `New Corporate Message: ${subject || "Corporate Inquiry"}`,
+      html: htmlContent,
+    };
+
+    // 5. Send Email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "Your message has been sent successfully.",
+    });
+  } catch (error) {
+    console.error("❌ Email Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error: Could not send email." });
+  }
+};
