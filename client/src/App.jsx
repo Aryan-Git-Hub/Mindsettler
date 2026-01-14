@@ -13,6 +13,7 @@ import UserProfile from "./pages/UserProfile.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import BlogPage from "./pages/BlogPage.jsx";
 import BlogDetail from "./pages/BlogDetail.jsx";
+import AboutUsPage from "./pages/aboutUs.jsx";
 
 // A small component to wrap public pages with the Navbar
 
@@ -33,6 +34,7 @@ function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="aboutus" element={<AboutUsPage/>}/>
         {/* GROUP 2: Admin Pages (No Public Navbar) */}
         {/* Your AdminDashboard has its own Sidebar, so it doesn't need a wrapper */}
         <Route path="/admin" element={<AdminDashboard />} />

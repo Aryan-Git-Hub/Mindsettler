@@ -55,6 +55,7 @@ const Navbar = () => {
     { name: "Blogs", href: "/blogs" },
     { name: "Corporate Services", href: "/corporate" },
     { name: "Contact", href: "/contact" },
+    {name: "About Us", href:"/aboutus"}
   ];
 
   const navLinks = [...baseLinks];
