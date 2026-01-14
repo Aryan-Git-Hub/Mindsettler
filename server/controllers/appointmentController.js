@@ -2,28 +2,42 @@ import Appointment from "../models/appointmentModel.js";
 import { Availability } from "../models/adminModel.js";
 import { WalletTransaction } from "../models/transactionModel.js";
 import User from "../models/userModel.js";
+import { sendBookingConfirmationEmail, sendSessionRejectedEmail } from "../utils/emailService.js";
 
 // @desc    Book a new session using Wallet Balance
 // @route   POST /api/appointments/book
 // @access  Private
 export const bookSession = async (req, res) => {
   try {
-    const { therapyType, sessionType, timeSlot, availabilityRef, notes, isPaidViaWallet } =
-      req.body;
+    const {
+      therapyType,
+      sessionType,
+      timeSlot,
+      availabilityRef,
+      notes,
+      isPaidViaWallet,
+    } = req.body;
 
     const sessionPrice = Number(process.env.SESSION_PRICE);
 
-    // 1. Check User Wallet Balance
+    // 1. Get User
     const user = await User.findById(req.user._id);
-    if (!user || user.walletBalance < sessionPrice) {
-      return res.status(400).json({
-        message: `Insufficient wallet balance. Current: ₹${
-          user?.walletBalance || 0
-        }. Required: ₹${sessionPrice}`,
-      });
+
+    // 2. Check Wallet Balance (only if paying via wallet)
+    const shouldPayViaWallet = isPaidViaWallet || sessionType === "online";
+
+    if (shouldPayViaWallet) {
+      if (!user || user.walletBalance < sessionPrice) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient wallet balance. Current: ₹${
+            user?.walletBalance || 0
+          }. Required: ₹${sessionPrice}`,
+        });
+      }
     }
 
-    // 2. Atomically find availability and mark slot as booked
+    // 3. Atomically find availability and mark slot as booked
     const availability = await Availability.findOneAndUpdate(
       {
         _id: availabilityRef,
@@ -39,21 +53,27 @@ export const bookSession = async (req, res) => {
     );
 
     if (!availability) {
-      return res
-        .status(400)
-        .json({ message: "Slot is no longer available or already booked." });
-    } else {
-      const slotDateTime = new Date(`${availability.date} ${timeSlot}`);
-      if (slotDateTime < new Date() || !availability.isActive) {
-        // ROLLBACK: If it's in the past, unbook the slot before returning error
-        await Availability.updateOne(
-          { _id: availabilityRef, "slots.time": timeSlot },
-          { $set: { "slots.$.isBooked": false } }
-        );
-        return res.status(400).json({ message: "Slot is expired" });
-      }
+      return res.status(400).json({
+        success: false,
+        message: "Slot is no longer available or already booked.",
+      });
     }
-    // 3. Create the Appointment
+
+    // Check if slot is expired
+    const slotDateTime = new Date(`${availability.date}T${timeSlot}`);
+    if (slotDateTime < new Date() || !availability.isActive) {
+      // ROLLBACK: Unbook the slot
+      await Availability.updateOne(
+        { _id: availabilityRef, "slots.time": timeSlot },
+        { $set: { "slots.$.isBooked": false } }
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Slot is expired",
+      });
+    }
+
+    // 4. Create the Appointment
     const appointment = await Appointment.create({
       user: req.user._id,
       availabilityRef,
@@ -61,56 +81,106 @@ export const bookSession = async (req, res) => {
       sessionType,
       timeSlot,
       notes,
-      isPaid: isPaidViaWallet || sessionType === "online",
-      status: "confirmed", // Directly confirmed since paid via wallet
+      isPaid: shouldPayViaWallet,
+      status: "confirmed",
     });
 
-    if (isPaidViaWallet || sessionType === "online") {
-      // 4. Deduct balance from User
+    // 5. Handle Payment (if paying via wallet)
+    if (shouldPayViaWallet) {
       user.walletBalance -= sessionPrice;
       await user.save();
 
-      // 5. Create Wallet Transaction
       await WalletTransaction.create({
         user: req.user._id,
         amount: sessionPrice,
         type: "debit",
         purpose: "booking",
         status: "completed",
-        referenceId: appointment._id, // Link to the appointment
+        referenceId: appointment._id,
         balanceAfter: user.walletBalance,
       });
     }
 
-    res.status(201).json({ success: true, data: appointment });
+    // 6. Send Confirmation Email
+    try {
+      await sendBookingConfirmationEmail(user.email, {
+        userName: user.name,
+        therapyType,
+        sessionType,
+        date: availability.date,
+        timeSlot,
+        isPaidViaWallet: shouldPayViaWallet,
+        sessionPrice,
+        bookingId: appointment._id.toString(),
+      });
+    } catch (emailError) {
+      // Log error but don't fail the booking
+      console.error("Failed to send booking confirmation email:", emailError);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Session booked successfully! Confirmation email sent.",
+      data: appointment,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Booking error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 // @desc    Update appointment status (Admin Only)
+// controllers/appointmentController.js
 export const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
     console.log(status);
-    const appointment = await Appointment.findById(req.params.id);
 
-    if (!appointment)
-      return res.status(404).json({ message: "Appointment not found" });
+    const appointment = await Appointment.findById(req.params.id).populate(
+      "availabilityRef"
+    );
 
-    // If an appointment is rejected, we must refund the user's wallet
-    if (appointment.status === "rejected" || appointment.status === "completed") {
-      return res.status(400).send("Appointment is already "+appointment.status);
+    if (!appointment) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Appointment not found" 
+      });
     }
+
+    // Check if appointment is already processed
+    if (appointment.status === "rejected" || appointment.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: `Appointment is already ${appointment.status}`,
+      });
+    }
+
+    // Get user details
+    const user = await User.findById(appointment.user);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    let refundAmount = 0;
+
+    // Handle rejection
     if (status === "rejected") {
-      const user = await User.findById(appointment.user);
+      // Process refund if payment was made via wallet
       if (appointment.isPaid) {
-        const refundAmount = Number(process.env.SESSION_PRICE); // Match session price
-        // Refund logic
+        refundAmount = Number(process.env.SESSION_PRICE);
+
+        // Refund to wallet
         user.walletBalance += refundAmount;
         await user.save();
 
-        // Create Refund History entry
+        // Create refund transaction record
         await WalletTransaction.create({
           user: user._id,
           amount: refundAmount,
@@ -121,20 +191,65 @@ export const updateStatus = async (req, res) => {
           balanceAfter: user.walletBalance,
         });
       }
-      // Also, free up the booked slot
+
+      // Free up the booked slot
       await Availability.updateOne(
         {
-          _id: appointment.availabilityRef,
+          _id: appointment.availabilityRef._id || appointment.availabilityRef,
           "slots.time": appointment.timeSlot,
         },
         { $set: { "slots.$.isBooked": false } }
       );
+
+      // Send rejection email
+      try {
+        // Get availability date
+        let appointmentDate;
+        if (appointment.availabilityRef && appointment.availabilityRef.date) {
+          appointmentDate = appointment.availabilityRef.date;
+        } else {
+          // Fetch availability if not populated
+          const availability = await Availability.findById(
+            appointment.availabilityRef
+          );
+          appointmentDate = availability?.date || new Date();
+        }
+
+        await sendSessionRejectedEmail(user.email, {
+          userName: user.name,
+          therapyType: appointment.therapyType,
+          sessionType: appointment.sessionType,
+          date: appointmentDate,
+          timeSlot: appointment.timeSlot,
+          bookingId: appointment._id.toString(),
+          isPaid: appointment.isPaid,
+          refundAmount: refundAmount,
+        });
+      } catch (emailError) {
+        console.error("Failed to send rejection email:", emailError);
+        // Don't fail the request if email fails
+      }
     }
+
+    // Update appointment status
     appointment.status = status;
     await appointment.save();
-    res.status(200).json({ success: true, data: appointment });
+
+    res.status(200).json({
+      success: true,
+      message: `Appointment ${status} successfully${
+        status === "rejected" && appointment.isPaid
+          ? `. ₹${refundAmount} refunded to user's wallet.`
+          : ""
+      }`,
+      data: appointment,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update status error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
