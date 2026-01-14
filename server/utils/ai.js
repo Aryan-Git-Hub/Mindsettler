@@ -69,8 +69,9 @@ ${context.visitCount ? `This is visit #${context.visitCount}` : ''}
   Keywords: "log out", "sign out", "end session", "exit account"
 
 ## Emotional Intents
-- **EMOTIONAL_SUPPORT**: User shares pain, confusion, sadness, stress, loneliness, anxiety, struggles, need to talk
+- **EMOTIONAL_SUPPORT**: User shares pain, confusion, sadness, stress, loneliness, anxiety, struggles, need to talk, benefits of therapy
   → Empathize first, then gently guide toward booking or resources
+  → Use phrases like "It makes sense that you feel...", "You're not alone in this...", "Taking the first step is brave..."
 
 - **CRISIS_SUPPORT**: User expresses self-harm thoughts, hopelessness, severe distress
   → Stay calm, validate, strongly encourage professional help
