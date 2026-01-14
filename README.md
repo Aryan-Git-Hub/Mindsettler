@@ -6,7 +6,7 @@
 
 **MindSettler** is a professional-grade mental health platform built to democratize access to specialized therapy. Designed by an AI student at **NIT Surat**, this project addresses the logistical friction in mental healthcare through an automated booking engine, a secure internal economy (Wallet), and smart-activation digital session rooms.
 
-🚀 **Live Link:** [https://mindsettler-taupe.vercel.app/auth](https://mindsettler-taupe.vercel.app/auth)
+🚀 **Live Link:** [https://mindsettler-taupe.vercel.app/auth](https://mindsettler-taupe.vercel.app/)
 
 ---
 
