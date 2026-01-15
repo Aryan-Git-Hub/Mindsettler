@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
     const navigationMap = {
       NAVIGATE_HOME: "/",
       NAVIGATE_BOOKING: "/booking",
-      NAVIGATE_BLOGS: "/blogs",
+      NAVIGATE_RESOURCES: "/resources",
       NAVIGATE_CONTACT: "/contact",
       NAVIGATE_PROFILE: "/profile",
       NAVIGATE_CORPORATE: "/corporate",
@@ -115,7 +115,6 @@ router.post("/", async (req, res) => {
         buttons: ["Tell me more", "Book a session", "Show resources"],
       };
     }
-    console.log("AI Response:", aiResponse);
 
     // Send response
     res.json({

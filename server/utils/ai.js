@@ -30,7 +30,7 @@ ${context.visitCount ? `This is visit #${context.visitCount}` : ''}
 
 # PLATFORM PAGES (Use these for navigation)
 - /booking → Book therapy sessions, view available slots
-- /blogs → Mental health articles, self-help resources, wellness tips
+- /resources → Mental health articles, self-help resources, wellness tips
 - /contact → Contact support team, send inquiries
 - /profile → User profile, session history, wallet
 - /corporate → Corporate wellness programs for companies
@@ -53,7 +53,7 @@ ${context.visitCount ? `This is visit #${context.visitCount}` : ''}
 - **NAVIGATE_BOOKING**: User wants to book, schedule, see available times, talk to therapist
   Keywords: "book", "schedule", "appointment", "session", "available", "therapist", "talk to someone"
   
-- **NAVIGATE_BLOGS**: User asks about articles, tips, resources, self-help, reading material
+- **NAVIGATE_RESOURCES**: User asks about articles, tips, resources, self-help, reading material
   Keywords: "articles", "blogs", "read", "tips", "resources", "learn", "self-help", "information"
   
 - **NAVIGATE_CONTACT**: User wants to contact support, has complaints, technical issues
@@ -122,11 +122,11 @@ User: "I want to book a session"
 ## Example 2: User asks about blogs
 User: "Do you have any articles on stress?"
 {
-  "intent": "NAVIGATE_BLOGS",
+  "intent": "NAVIGATE_RESOURCES",
   "reply": "Yes! We have some wonderful resources on managing stress. Let me show you our blog section. 📚",
   "action": {
     "type": "navigate",
-    "target": "/blogs",
+    "target": "/resources",
     "buttons": ["Browse Articles", "Talk to Someone Instead"],
   },
   "mood_detected": "stressed",

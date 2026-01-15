@@ -8,9 +8,24 @@ import {
   Heart,
   ArrowRight,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [scrollRequired, setScrollRequired] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setScrollRequired(true);
+      } else {
+        setScrollRequired(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const footerLinks = {
     services: [
@@ -26,7 +41,7 @@ export default function Footer() {
       { name: "Contact Us", href: "/contact" },
     ],
     resources: [
-      { name: "Blogs & Articles", href: "/blogs" }
+      { name: "Blogs & Articles", href: "/resources" }
     ],
   };
 
@@ -369,9 +384,10 @@ export default function Footer() {
       </div>
 
       {/* Scroll to Top Button */}
+      {scrollRequired && (
       <motion.button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white shadow-lg shadow-[#Dd1764]/30 flex items-center justify-center z-50"
+        className="fixed bottom-7 right-5 w-12 h-12 rounded-full bg-linear-to-r from-[#3F2965] to-[#Dd1764] text-white shadow-lg shadow-[#Dd1764]/30 flex items-center justify-center z-30"
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
         whileHover={{ scale: 1.1, y: -3 }}
@@ -392,7 +408,7 @@ export default function Footer() {
             d="M5 10l7-7m0 0l7 7m-7-7v18"
           />
         </motion.svg>
-      </motion.button>
+      </motion.button>)}
     </footer>
   );
 }

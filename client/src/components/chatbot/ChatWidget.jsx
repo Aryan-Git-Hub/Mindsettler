@@ -9,11 +9,9 @@ import {
   ShieldCheck,
   Heart,
   GripVertical,
-  ArrowDown,
   ExternalLink,
   BookOpen,
   Calendar,
-  MessageCircle,
   Phone,
   User,
   Briefcase,
@@ -23,11 +21,11 @@ import {
   Meh,
   AlertCircle,
   Zap,
-  ArrowRight,
   Coffee,
   Sun,
   Moon,
   CloudSun,
+  Loader2,
 } from "lucide-react";
 import API from "../../api/axios.js";
 import botAvatar from "../../assets/icons/ChatBotmini-removebg-preview.png";
@@ -64,10 +62,10 @@ const moodConfig = {
 // Page navigation configuration
 const pageConfig = {
   "/": { name: "Home", icon: GripVertical, color: "from-slate-600 to-slate-800" },
-  "/booking": { name: "Book Session", icon: Calendar, color: "from-[#3F2965] to-[#DD1764]" },
-  "/blogs": { name: "Read Articles", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
-  "/contact": { name: "Contact Us", icon: Phone, color: "from-blue-500 to-indigo-500" },
-  "/profile": { name: "My Profile", icon: User, color: "from-slate-600 to-slate-800" },
+  "/booking": { name: "Booking Session", icon: Calendar, color: "from-[#3F2965] to-[#DD1764]" },
+  "/resources": { name: "Resources", icon: BookOpen, color: "from-emerald-500 to-teal-500" },
+  "/contact": { name: "Contact", icon: Phone, color: "from-blue-500 to-indigo-500" },
+  "/profile": { name: "Profile", icon: User, color: "from-slate-600 to-slate-800" },
   "/corporate": { name: "Corporate", icon: Briefcase, color: "from-amber-500 to-orange-500" },
   "/logout": { name: "Logout", icon: ShieldCheck, color: "from-red-500 to-pink-500" },
 };
@@ -152,35 +150,35 @@ const QuickActions = ({ buttons, onSelect, isAnimated = true }) => {
   );
 };
 
-
-// Navigation button
-const NavigationButton = ({ target, onNavigate, customLabel }) => {
-  if (!target) return null;
-
-  const config = pageConfig[target] || { name: "Go", icon: ExternalLink, color: "from-slate-600 to-slate-800" };
+// Redirecting indicator component
+const RedirectingIndicator = ({ target }) => {
+  const config = pageConfig[target] || { name: "page", icon: ExternalLink, color: "from-slate-600 to-slate-800" };
   const Icon = config.icon;
 
   return (
-    <button
-      onClick={() => onNavigate(target)}
-      className={`mt-3 w-full flex items-center justify-center gap-2 
-                  py-3 px-4 bg-linear-to-r ${config.color}
-                  text-white font-bold text-sm rounded-xl 
-                  shadow-lg hover:shadow-xl 
-                  transition-all 
-                  hover:scale-[1.02] active:scale-[0.98]
-                  animate-in fade-in slide-in-from-bottom-2 duration-500
-                  group`}
-    >
-      <Icon size={16} />
-      <span>{customLabel || config.name}</span>
-      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-    </button>
+    <div className="mt-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className={`w-full flex items-center justify-center gap-3 py-4 px-4 bg-linear-to-r ${config.color} text-white font-bold text-sm rounded-xl shadow-lg`}>
+        <Loader2 size={18} className="animate-spin" />
+        <span>Redirecting to {config.name}...</span>
+        <Icon size={16} className="animate-pulse" />
+      </div>
+      <div className="mt-2 flex justify-center">
+        <div className="flex gap-1">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full bg-linear-to-r ${config.color} animate-pulse`}
+              style={{ animationDelay: `${i * 200}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 
 // Message bubble
-const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) => {
+const MessageBubble = ({ message, isUser, isLatest, isRedirecting, onQuickReply }) => {
   const [showReactions, setShowReactions] = useState(false);
 
   return (
@@ -226,14 +224,14 @@ const MessageBubble = ({ message, isUser, isLatest, onNavigate, onQuickReply }) 
           <MoodBadge mood={message.mood_detected} />
         )}
 
-        {/* Quick Action Buttons */}
-        {!isUser && message.action?.buttons && (
+        {/* Quick Action Buttons - only show if not redirecting */}
+        {!isUser && message.action?.buttons && !isRedirecting && (
           <QuickActions buttons={message.action.buttons} onSelect={onQuickReply} />
         )}
 
-        {/* Navigation Button */}
-        {!isUser && message.action?.type === "navigate" && message.action?.target && (
-          <NavigationButton target={message.action.target} onNavigate={onNavigate} />
+        {/* Redirecting Indicator - show instead of navigation button */}
+        {!isUser && message.action?.type === "navigate" && message.action?.target && isRedirecting && (
+          <RedirectingIndicator target={message.action.target} />
         )}
 
         {/* Timestamp & Reactions */}
@@ -396,6 +394,8 @@ const ChatWidget = ({ user }) => {
   const [showNotification, setShowNotification] = useState(true);
   const [currentMood, setCurrentMood] = useState(null);
   const [messageCount, setMessageCount] = useState(0);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState(null);
 
   const greeting = getTimeGreeting();
   const userName = user?.name?.split(" ")[0] || "there";
@@ -422,7 +422,7 @@ const ChatWidget = ({ user }) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }
-  }, [history, loading]);
+  }, [history, loading, isRedirecting]);
 
   // Lock body scroll on mobile
   useEffect(() => {
@@ -447,19 +447,33 @@ const ChatWidget = ({ user }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation
+  // Handle navigation with loading state
   const handleNavigate = useCallback((path) => {
-    setIsOpen(false);
-    setTimeout(() => navigate(path), 300);
+    setIsRedirecting(true);
+    setRedirectTarget(path);
+    
+    // Navigate after showing the loading indicator
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsRedirecting(false);
+      setRedirectTarget(null);
+      navigate(path);
+    }, 2500);
   }, [navigate]);
 
   // Handle close
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setIsRedirecting(false);
+    setRedirectTarget(null);
+  }, []);
 
   // Handle quick reply
   const handleQuickReply = useCallback((text) => {
-    handleSend(text);
-  }, []);
+    if (!isRedirecting) {
+      handleSend(text);
+    }
+  }, [isRedirecting]);
 
   // Clear chat
   const handleClearChat = useCallback(async () => {
@@ -477,11 +491,13 @@ const ChatWidget = ({ user }) => {
     }]);
     setCurrentMood(null);
     setMessageCount(0);
+    setIsRedirecting(false);
+    setRedirectTarget(null);
   }, [chatId, userName]);
 
   // Send message
   const handleSend = async (text = message) => {
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading || isRedirecting) return;
 
     const userMessage = {
       role: "user",
@@ -524,10 +540,9 @@ const ChatWidget = ({ user }) => {
       // Update mood
       if (mood_detected) setCurrentMood(mood_detected);
 
-      // Handle navigation intents
-      const navigationIntents = ["NAVIGATE_HOME", "BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_BLOGS", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE", "NAVIGATE_LOGOUT"];
+      // Handle navigation intents - auto navigate with loading indicator
+      const navigationIntents = ["NAVIGATE_HOME", "BOOK_SESSION", "NAVIGATE_BOOKING", "NAVIGATE_RESOURCES", "NAVIGATE_CONTACT", "NAVIGATE_PROFILE", "NAVIGATE_CORPORATE", "NAVIGATE_LOGOUT"];
       
-      // Auto-navigate
       if (navigationIntents.includes(intent) && action?.target) {
         handleNavigate(action.target);
       }
@@ -559,20 +574,7 @@ const ChatWidget = ({ user }) => {
   // Position styles
   const buttonPositionStyles = position
     ? { position: "fixed", left: `${position.x}px`, top: `${position.y}px`, right: "auto", bottom: "auto" }
-    : { position: "fixed", right: "16px", bottom: "16px" };
-
-  const getNotificationPosition = () => {
-    if (position) {
-      const isOnLeft = position.x < window.innerWidth / 2;
-      return {
-        position: "fixed",
-        left: isOnLeft ? `${position.x + 70}px` : "auto",
-        right: isOnLeft ? "auto" : `${window.innerWidth - position.x + 10}px`,
-        top: `${position.y - 10}px`,
-      };
-    }
-    return { position: "fixed", right: "24px", bottom: "96px" };
-  };
+    : { position: "fixed", left: "20px", bottom: "20px" };
 
   return (
     <div className="font-sans">
@@ -586,7 +588,7 @@ const ChatWidget = ({ user }) => {
           />
 
           {/* Chat Container */}
-          <div className="fixed z-50 inset-0 md:inset-auto md:bottom-24 md:right-6 md:w-95 lg:w-105 md:h-145 lg:h-155 md:rounded-3xl bg-linear-to-b from-white/95 to-white/90 backdrop-blur-xl md:shadow-2xl md:border md:border-white/50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-500">
+          <div className="fixed z-50 inset-0 md:inset-auto md:bottom-24 md:left-6 md:w-95 lg:w-105 md:h-145 lg:h-155 md:rounded-3xl bg-linear-to-b from-white/95 to-white/90 backdrop-blur-xl md:shadow-2xl md:border md:border-white/50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-500">
             
             {/* === HEADER === */}
             <div className="shrink-0 relative overflow-hidden">
@@ -614,17 +616,26 @@ const ChatWidget = ({ user }) => {
                       <Sparkles size={12} className="text-yellow-300 animate-pulse" />
                     </h3>
                     <div className="flex items-center gap-2 text-[10px] text-white/70">
-                      <span>Online</span>
-                      {currentMood && (
+                      {isRedirecting ? (
+                        <span className="flex items-center gap-1">
+                          <Loader2 size={10} className="animate-spin" />
+                          Redirecting...
+                        </span>
+                      ) : (
                         <>
-                          <span>•</span>
-                          <span className="capitalize">{currentMood}</span>
-                        </>
-                      )}
-                      {messageCount > 0 && (
-                        <>
-                          <span>•</span>
-                          <span>{messageCount} msgs</span>
+                          <span>Online</span>
+                          {currentMood && (
+                            <>
+                              <span>•</span>
+                              <span className="capitalize">{currentMood}</span>
+                            </>
+                          )}
+                          {messageCount > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>{messageCount} msgs</span>
+                            </>
+                          )}
                         </>
                       )}
                     </div>
@@ -636,7 +647,8 @@ const ChatWidget = ({ user }) => {
                   {/* Clear Chat */}
                   <button
                     onClick={handleClearChat}
-                    className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+                    disabled={isRedirecting}
+                    className="p-2 hover:bg-white/10 rounded-xl transition-colors disabled:opacity-50"
                     title="Clear chat"
                   >
                     <RefreshCw size={16} className="text-white/70" />
@@ -667,15 +679,16 @@ const ChatWidget = ({ user }) => {
                   message={msg}
                   isUser={msg.role === "user"}
                   isLatest={i === history.length - 1 && msg.role === "bot"}
-                  onNavigate={handleNavigate}
+                  isRedirecting={isRedirecting && msg.action?.target === redirectTarget}
                   onQuickReply={handleQuickReply}
                 />
               ))}
 
               {loading && <TypingIndicator />}
 
-              {/* Show default quick replies after bot message if none provided */}
+              {/* Show default quick replies after bot message if none provided and not redirecting */}
               {!loading && 
+               !isRedirecting &&
                history.length > 0 && 
                history[history.length - 1]?.role === "bot" && 
                !history[history.length - 1]?.action?.buttons && 
@@ -703,19 +716,24 @@ const ChatWidget = ({ user }) => {
                   ref={inputRef}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Share what's on your mind..."
-                  className="flex-1 bg-slate-50/80 hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-[#3F2965]/20 border border-slate-200/50 focus:border-[#3F2965]/30 transition-all placeholder:text-slate-300"
+                  placeholder={isRedirecting ? "Please wait..." : "Share what's on your mind..."}
+                  disabled={isRedirecting}
+                  className="flex-1 bg-slate-50/80 hover:bg-slate-50 focus:bg-white rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-[#3F2965]/20 border border-slate-200/50 focus:border-[#3F2965]/30 transition-all placeholder:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="submit"
-                  disabled={loading || !message.trim()}
+                  disabled={loading || !message.trim() || isRedirecting}
                   className={`p-3 rounded-xl transition-all duration-300 min-h-12 min-w-12 flex items-center justify-center ${
-                    message.trim()
+                    message.trim() && !isRedirecting
                       ? "bg-linear-to-r from-[#3F2965] to-[#DD1764] text-white shadow-lg hover:shadow-xl active:scale-95"
                       : "bg-slate-100 text-slate-300"
                   }`}
                 >
-                  <Send size={18} />
+                  {isRedirecting ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Send size={18} />
+                  )}
                 </button>
               </form>
 
@@ -728,15 +746,6 @@ const ChatWidget = ({ user }) => {
                 </span>
               </div>
             </div>
-
-            {/* Mobile Close Button */}
-            <button
-              onClick={handleClose}
-              className="md:hidden fixed top-24 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-5 py-2.5 bg-slate-900/90 backdrop-blur-xl rounded-full text-white shadow-2xl border border-white/10 animate-in slide-in-from-top-5 duration-500"
-            >
-              <ArrowDown size={16} className="animate-bounce" />
-              <span className="text-sm font-bold">Close Chat</span>
-            </button>
           </div>
         </>
       )}
