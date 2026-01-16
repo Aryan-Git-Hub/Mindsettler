@@ -238,7 +238,7 @@ const ResetPassword = () => {
             This password reset link is invalid or has already been used.
           </p>
           <Link
-            to="/login"
+            to="/auth"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#3F2965] to-[#DD1764] text-white font-bold rounded-xl hover:opacity-90 transition-all"
           >
             <ChevronLeft size={18} />
@@ -267,14 +267,14 @@ const ResetPassword = () => {
           </p>
           <div className="space-y-3">
             <Link
-              to="/login"
+              to="/auth"
               className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#3F2965] to-[#DD1764] text-white font-bold rounded-xl hover:opacity-90 transition-all"
             >
               <RefreshCw size={18} />
               Request New Link
             </Link>
             <Link
-              to="/login"
+              to="/auth"
               className="block text-sm text-[#6B4D8A] hover:text-[#DD1764] font-medium transition-colors"
             >
               ← Back to Login
@@ -523,7 +523,7 @@ const ResetPassword = () => {
             {/* Back to Login */}
             <div className="text-center mt-6">
               <Link
-                to="/login"
+                to="/auth"
                 className="inline-flex items-center gap-2 text-sm font-medium text-[#6B4D8A] hover:text-[#DD1764] transition-colors"
               >
                 <ChevronLeft size={16} />
