@@ -1,3 +1,4 @@
+// pages/AuthPage.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,7 +38,7 @@ const FeatureBadge = ({ icon: Icon, text, delay }) => (
 
 // Desktop Illustration Section
 const IllustrationSection = ({ illustrationSrc }) => (
-  <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-linear-to-br from-[#f8f4fc] via-[#fdf2f5] to-[#f5f0fa] items-center justify-center">
+  <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#f8f4fc] via-[#fdf2f5] to-[#f5f0fa] items-center justify-center">
     {/* Decorative elements */}
     <div className="absolute inset-0">
       <div className="absolute top-20 left-20 w-72 h-72 bg-[#3F2965]/5 rounded-full blur-3xl" />
@@ -49,7 +50,7 @@ const IllustrationSection = ({ illustrationSrc }) => (
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 1, ease: "easeOut" }}
-      className="absolute bottom-0 w-70 xl:w-87.5 h-100 xl:h-125 bg-linear-to-t from-[#F8D7DA] via-[#FADBD8] to-transparent rounded-t-full"
+      className="absolute bottom-0 w-70 xl:w-87.5 h-100 xl:h-125 bg-gradient-to-t from-[#F8D7DA] via-[#FADBD8] to-transparent rounded-t-full"
     />
 
     {/* Character Image */}
@@ -104,7 +105,7 @@ const MobileIllustration = ({ illustrationSrc }) => (
     className="lg:hidden relative w-full flex justify-center items-end py-6"
   >
     {/* Arch background */}
-    <div className="absolute bottom-0 w-40 h-52 sm:w-48 sm:h-60 bg-linear-to-t from-[#F8D7DA] via-[#FADBD8] to-transparent rounded-t-full" />
+    <div className="absolute bottom-0 w-40 h-52 sm:w-48 sm:h-60 bg-gradient-to-t from-[#F8D7DA] via-[#FADBD8] to-transparent rounded-t-full" />
 
     {/* Character */}
     <motion.img
@@ -114,12 +115,6 @@ const MobileIllustration = ({ illustrationSrc }) => (
       animate={{ y: [0, -5, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
     />
-
-    <motion.div
-      className="absolute bottom-1/3 left-1/4"
-      animate={{ rotate: -360 }}
-      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-    ></motion.div>
   </motion.div>
 );
 
@@ -137,7 +132,7 @@ const Input = ({ icon, label, rightIcon, error, ...props }) => (
     )}
     <div className="relative group">
       {/* Glow effect on focus */}
-      <div className="absolute -inset-0.5 bg-linear-to-r from-[#3F2965] to-[#DD1764] rounded-2xl opacity-0 group-focus-within:opacity-20 blur transition-opacity duration-300" />
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#3F2965] to-[#DD1764] rounded-2xl opacity-0 group-focus-within:opacity-20 blur transition-opacity duration-300" />
 
       <div className="relative flex items-center">
         <div className="absolute left-4 text-[#6B4D8A]/40 group-focus-within:text-[#3F2965] transition-colors duration-300">
@@ -173,16 +168,16 @@ const Input = ({ icon, label, rightIcon, error, ...props }) => (
 );
 
 // Success Screen Component
-const SuccessScreen = ({ type, onBack }) => (
+const SuccessScreen = ({ type, onBack, email }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.9 }}
-    className="w-full min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-[#f8f4fc] via-white to-[#fdf2f5]"
+    className="w-full min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#f8f4fc] via-white to-[#fdf2f5]"
   >
     <div className="w-full max-w-sm sm:max-w-md bg-white/80 backdrop-blur-xl p-6 sm:p-10 rounded-3xl shadow-2xl border border-white/50 text-center relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-linear-to-br from-[#3F2965]/5 to-[#DD1764]/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#3F2965]/5 to-[#DD1764]/5 pointer-events-none" />
 
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
@@ -190,8 +185,8 @@ const SuccessScreen = ({ type, onBack }) => (
         transition={{ type: "spring", duration: 0.8, delay: 0.2 }}
         className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6"
       >
-        <div className="absolute inset-0 bg-linear-to-br from-[#3F2965] to-[#DD1764] rounded-full opacity-20 animate-ping" />
-        <div className="relative w-full h-full bg-linear-to-br from-[#3F2965] to-[#DD1764] rounded-full flex items-center justify-center shadow-xl shadow-[#3F2965]/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#3F2965] to-[#DD1764] rounded-full opacity-20 animate-ping" />
+        <div className="relative w-full h-full bg-gradient-to-br from-[#3F2965] to-[#DD1764] rounded-full flex items-center justify-center shadow-xl shadow-[#3F2965]/30">
           {type === "forgot" ? (
             <Mail size={32} className="text-white sm:w-10 sm:h-10" />
           ) : (
@@ -213,18 +208,47 @@ const SuccessScreen = ({ type, onBack }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="text-[#6B4D8A]/70 mb-6 text-sm sm:text-base leading-relaxed"
+        className="text-[#6B4D8A]/70 mb-2 text-sm sm:text-base leading-relaxed"
       >
         {type === "forgot"
-          ? "We've sent a password reset link to your inbox. Check spam if you don't see it! 📥"
+          ? "We've sent a password reset link to your email."
           : "Your account is ready. Redirecting you to your dashboard..."}
       </motion.p>
+
+      {type === "forgot" && email && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.55 }}
+          className="text-[#3F2965] font-medium text-sm mb-4"
+        >
+          📧 {email}
+        </motion.p>
+      )}
+
+      {type === "forgot" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left"
+        >
+          <p className="text-xs text-amber-800 font-medium">
+            💡 <strong>Tips:</strong>
+          </p>
+          <ul className="text-xs text-amber-700 mt-2 space-y-1 list-disc list-inside">
+            <li>Check your spam/junk folder</li>
+            <li>The link expires in 1 hour</li>
+            <li>Make sure to use a strong password</li>
+          </ul>
+        </motion.div>
+      )}
 
       {type === "forgot" ? (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.7 }}
           onClick={onBack}
           className="inline-flex items-center gap-2 text-sm font-bold text-[#DD1764] hover:text-[#3F2965] transition-colors"
         >
@@ -236,7 +260,7 @@ const SuccessScreen = ({ type, onBack }) => (
           initial={{ width: 0 }}
           animate={{ width: "100%" }}
           transition={{ duration: 2, ease: "easeInOut" }}
-          className="h-1.5 bg-linear-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965] rounded-full overflow-hidden"
+          className="h-1.5 bg-gradient-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965] rounded-full overflow-hidden"
         />
       )}
     </div>
@@ -249,6 +273,7 @@ const AuthPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
@@ -265,19 +290,24 @@ const AuthPage = () => {
     setErrors([]);
     setIsSubmitting(true);
 
-    const data = Object.fromEntries(new FormData(e.target));
-    const endpoint =
-      view === "login"
-        ? "login"
-        : view === "signup"
-        ? "signup"
-        : "forgot-password";
+    const formData = Object.fromEntries(new FormData(e.target));
+
+    // Determine endpoint based on view
+    let endpoint;
+    if (view === "login") {
+      endpoint = "/user/login";
+    } else if (view === "signup") {
+      endpoint = "/user/signup";
+    } else if (view === "forgot") {
+      endpoint = "/user/auth/forgot-password";
+    }
 
     try {
-      const { data: resData } = await API.post(`/user/${endpoint}`, data);
+      const { data: resData } = await API.post(endpoint, formData);
 
       if (resData.success) {
-        if (endpoint === "forgot-password") {
+        if (view === "forgot") {
+          setForgotEmail(formData.email);
           setView("forgot-success");
         } else {
           setView("success");
@@ -288,9 +318,10 @@ const AuthPage = () => {
         }
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.errors || [
-          err.response?.data?.message,
-        ] || ["Service unavailable. Please try again."];
+      const errorMsg =
+        err.response?.data?.errors ||
+        [err.response?.data?.message] ||
+        ["Service unavailable. Please try again."];
       setErrors(Array.isArray(errorMsg) ? errorMsg : [errorMsg]);
     } finally {
       setIsSubmitting(false);
@@ -303,12 +334,13 @@ const AuthPage = () => {
       <SuccessScreen
         type={view === "forgot-success" ? "forgot" : "success"}
         onBack={() => setView("login")}
+        email={forgotEmail}
       />
     );
   }
 
   return (
-    <div className="relative min-h-screen w-full flex bg-linear-to-br from-[#f8f4fc] via-white to-[#fdf2f5] overflow-hidden">
+    <div className="relative min-h-screen w-full flex bg-gradient-to-br from-[#f8f4fc] via-white to-[#fdf2f5] overflow-hidden">
       {/* Mobile background decorations */}
       <div className="lg:hidden absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#DD1764]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -325,7 +357,7 @@ const AuthPage = () => {
         >
           {/* === LEFT SECTION - FORM === */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-5 py-8 sm:px-8 md:px-12 lg:px-16 xl:px-24 min-h-screen lg:min-h-0">
-            <div className="w-full max-w-100">
+            <div className="w-full max-w-md">
               {/* Logo */}
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -361,12 +393,17 @@ const AuthPage = () => {
                   {view === "signup" && (
                     <>
                       Begin Your{" "}
-                      <span className="text-transparent bg-clip-text bg-linear-to-r from-[#DD1764] to-[#3F2965]">
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#DD1764] to-[#3F2965]">
                         Journey
                       </span>
                     </>
                   )}
-                  {view === "forgot" && "Reset Password"}
+                  {view === "forgot" && (
+                    <>
+                      Forgot Password?{" "}
+                      <span className="inline-block">🔐</span>
+                    </>
+                  )}
                 </h1>
                 <p className="text-[#6B4D8A]/60 text-sm sm:text-base">
                   {view === "login" &&
@@ -374,7 +411,7 @@ const AuthPage = () => {
                   {view === "signup" &&
                     "Create an account to start healing today."}
                   {view === "forgot" &&
-                    "Enter your email to receive a reset link."}
+                    "No worries! Enter your email and we'll send you a reset link."}
                 </p>
               </motion.div>
 
@@ -502,27 +539,25 @@ const AuthPage = () => {
                   disabled={isSubmitting}
                   type="submit"
                   className={`
-    relative w-full py-4 sm:py-4.5 px-6 mt-2
-    bg-linear-to-r from-[#3F2965] via-[#5a3d8a] to-[#3F2965]
-    bg-size-[200%_100%] bg-left
-    hover:bg-right
-    text-white font-bold text-sm sm:text-base
-    rounded-xl sm:rounded-2xl
-    transition-all duration-500
-    flex items-center justify-center gap-3
-    shadow-xl shadow-[#3F2965]/20
-    disabled:opacity-70 disabled:cursor-not-allowed
-    overflow-hidden
-    group
-  `}
+                    relative w-full py-4 sm:py-4.5 px-6 mt-2
+                    bg-gradient-to-r from-[#3F2965] via-[#5a3d8a] to-[#3F2965]
+                    bg-[length:200%_100%] bg-left
+                    hover:bg-right
+                    text-white font-bold text-sm sm:text-base
+                    rounded-xl sm:rounded-2xl
+                    transition-all duration-500
+                    flex items-center justify-center gap-3
+                    shadow-xl shadow-[#3F2965]/20
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    overflow-hidden
+                    group
+                  `}
                 >
                   {/* Shine effect */}
-                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
                   {isSubmitting ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                    </>
+                    <Loader2 size={20} className="animate-spin" />
                   ) : (
                     <>
                       <span className="relative z-10">
@@ -541,11 +576,11 @@ const AuthPage = () => {
 
               {/* Divider */}
               <div className="flex items-center gap-4 my-6">
-                <div className="flex-1 h-px bg-linear-to-r from-transparent via-[#3F2965]/20 to-transparent" />
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3F2965]/20 to-transparent" />
                 <span className="text-xs text-[#6B4D8A]/40 font-medium">
                   OR
                 </span>
-                <div className="flex-1 h-px bg-linear-to-r from-transparent via-[#3F2965]/20 to-transparent" />
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3F2965]/20 to-transparent" />
               </div>
 
               {/* Toggle View */}

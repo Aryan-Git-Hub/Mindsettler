@@ -14,6 +14,7 @@ import ChatWidget from "./components/chatbot/ChatWidget.jsx";
 import AboutUsPage from "./pages/aboutUs.jsx";
 import ResourcesPage from "./pages/Resources.jsx";
 import VerifyEmail from "./components/auth/VerifyEmail.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 // A small component to wrap public pages with the Navbar
 
@@ -35,6 +36,7 @@ function App() {
         <Route path="/aboutus" element={<AboutUsPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/verify-email" element={<VerifyEmail user={user} setUser={setUser} />}/>
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* GROUP 2: Admin Pages (No Public Navbar) */}
         {/* Your AdminDashboard has its own Sidebar, so it doesn't need a wrapper */}
         <Route path="/admin" element={<AdminDashboard />} />

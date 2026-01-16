@@ -86,24 +86,6 @@ export const login = async (req, res) => {
   }
 };
 
-export const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Here you would normally generate a reset token and send an email.
-    // For simplicity, we'll just return a success message.
-
-    res.status(200).json({
-      success: true,
-      message: "Password reset link has been sent to your email (simulated).",
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 // @desc    Get user profile
 // @route   GET /api/auth/profile
 export const getUserProfile = async (req, res) => {
