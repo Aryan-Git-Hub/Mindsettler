@@ -25,7 +25,7 @@ import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import StatsSection from "../components/common/StatsSection";
+import { IsLoginUser, IsVerifiedUser, IsProfileCompleteUser } from "../components/auth/Verification";
 
 // ==================== ANIMATION STYLES ====================
 const animationStyles = `
@@ -980,7 +980,9 @@ const BookingPage = () => {
     // Check wallet balance if paying via wallet
     const isPaidViaWallet = getIsPaidViaWallet();
     if (isPaidViaWallet && (user?.walletBalance || 0) < 500) {
-      setErrorMsg("Insufficient wallet balance. Please add funds or select cash payment for in-person sessions.");
+      setErrorMsg(
+        "Insufficient wallet balance. Please add funds or select cash payment for in-person sessions."
+      );
       return;
     }
 
@@ -1013,8 +1015,7 @@ const BookingPage = () => {
       setShowSuccess(true);
     } catch (err) {
       setErrorMsg(
-        err.response?.data?.message ||
-          "Transaction failed. Please try again."
+        err.response?.data?.message || "Transaction failed. Please try again."
       );
     } finally {
       setSubmitting(false);
@@ -1024,271 +1025,294 @@ const BookingPage = () => {
   const isPaidViaWallet = getIsPaidViaWallet();
 
   return (
-    <>
-      <style>{animationStyles}</style>
+    <IsLoginUser user={user}>
+      <IsVerifiedUser user={user}>
+        <IsProfileCompleteUser user={user}>
+          <>
+            <style>{animationStyles}</style>
 
-      <Navbar />
+            <Navbar />
 
-      <div className="min-h-screen pt-24 bg-linear-to-br from-[#FDFCFD] via-white to-purple-50/30 font-sans flex flex-col relative overflow-hidden">
-        <FloatingShapes />
+            <div className="min-h-screen pt-24 bg-linear-to-br from-[#FDFCFD] via-white to-purple-50/30 font-sans flex flex-col relative overflow-hidden">
+              <FloatingShapes />
 
-        {/* Modals */}
-        <ConfirmationModal
-          isOpen={showConfirmModal}
-          onClose={() => setShowConfirmModal(false)}
-          onConfirm={handleFinalPayment}
-          selectedTherapy={selectedTherapy}
-          selectedDate={selectedDate}
-          selectedSlot={selectedSlot}
-          formatTo12Hr={formatTo12Hr}
-          sessionType={sessionType}
-          paymentMethod={paymentMethod}
-        />
+              {/* Modals */}
+              <ConfirmationModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={handleFinalPayment}
+                selectedTherapy={selectedTherapy}
+                selectedDate={selectedDate}
+                selectedSlot={selectedSlot}
+                formatTo12Hr={formatTo12Hr}
+                sessionType={sessionType}
+                paymentMethod={paymentMethod}
+              />
 
-        <SuccessOverlay
-          isOpen={showSuccess}
-          onNavigate={() =>
-            navigate(`/profile#${encodeURIComponent("My Bookings")}`)
-          }
-          isPaidViaWallet={isPaidViaWallet}
-        />
+              <SuccessOverlay
+                isOpen={showSuccess}
+                onNavigate={() =>
+                  navigate(`/profile#${encodeURIComponent("My Bookings")}`)
+                }
+                isPaidViaWallet={isPaidViaWallet}
+              />
 
-        <main
-          className={`
+              <main
+                className={`
           relative z-10 max-w-7xl mx-auto w-full flex-1 flex flex-col px-4 md:px-8 pb-6
           transition-opacity duration-500
           ${pageLoaded ? "opacity-100" : "opacity-0"}
         `}
-        >
-          {/* Header - Updated with new gradient colors */}
-          <header className="py-3 md:py-4 animate-fade-in-down">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-              <div>
-                <h1 className="text-2xl md:text-4xl font-black tracking-tight">
-                  <span
-                    className="bg-clip-text text-transparent"
-                    style={{
-                      backgroundImage: "linear-gradient(135deg, #e91e7e)",
-                    }}
-                  >
-                    Schedule Session
-                  </span>
-                </h1>
-                <p className="text-sm text-slate-400 mt-1 font-medium">
-                  Book your personalized therapy session
-                </p>
-              </div>
-              <ProgressStepper currentStep={currentStep} />
-            </div>
-          </header>
-
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 overflow-hidden pb-4">
-            {/* Sidebar */}
-            <aside className="flex flex-col gap-4 md:gap-6 overflow-hidden animate-fade-in-left">
-              <div className="glass p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-white/50 shadow-xl shadow-purple-100/20 flex-1 overflow-y-auto custom-scrollbar max-h-100 lg:max-h-none">
-                <h2 className="font-black text-base md:text-lg mb-4 md:mb-6 text-[#3F2965] flex items-center gap-2">
-                  <Sparkles size={20} className="text-[#Dd1764]" />
-                  THERAPY TYPE
-                </h2>
-                <div className="space-y-2">
-                  {therapies.map((t, index) => (
-                    <TherapyCard
-                      key={t}
-                      therapy={t}
-                      isSelected={selectedTherapy === t}
-                      onClick={() => setSelectedTherapy(t)}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="glass p-4 md:p-6 rounded-2xl md:rounded-4xl border border-white/50 shadow-xl shadow-purple-100/20 shrink-0 animate-fade-in-up delay-300">
-                <h3 className="font-black mb-3 md:mb-4 flex items-center gap-2 text-[10px] md:text-xs uppercase text-[#3F2965]">
-                  <Info size={14} className="text-[#Dd1764] md:w-4 md:h-4" />{" "}
-                  Session Details
-                </h3>
-                <div className="space-y-2 md:space-y-3">
-                  {[
-                    { label: "Duration", value: "60 Minutes", icon: Clock },
-                    { label: "Session Fee", value: "₹500", icon: Wallet },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between text-xs font-bold p-3 bg-slate-50 rounded-xl"
-                    >
-                      <span className="text-slate-400 flex items-center gap-2">
-                        <item.icon size={14} />
-                        {item.label}
-                      </span>
-                      <span className="text-[#3F2965]">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            {/* Main Content */}
-            <section className="lg:col-span-2 glass rounded-[2.5rem] border border-white/50 shadow-xl shadow-purple-100/20 flex flex-col overflow-hidden animate-fade-in-right">
-              <div
-                ref={scrollableRef}
-                className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12 custom-scrollbar"
               >
-                <ErrorAlert
-                  message={errorMsg}
-                  onClose={() => setErrorMsg("")}
-                />
-
-                {/* Date Picker */}
-                <div className="mb-6 md:mb-10 animate-fade-in-up">
-                  <SectionTitle
-                    icon={
-                      <CalendarIcon size={16} className="md:w-4.5 md:h-4.5" />
-                    }
-                    title="Choose Date"
-                    subtitle="Select your preferred date"
-                  />
-                  <div className="flex flex-col sm:flex-row items-stretch gap-2 md:gap-3 mt-2 md:mt-3">
-                    <div className="relative flex-1">
-                      <input
-                        type="date"
-                        min={new Date().toISOString().split("T")[0]}
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full p-4 pr-12 rounded-2xl bg-slate-50 font-bold text-[#3F2965] outline-none border-2 border-transparent focus:border-[#3F2965]/20 transition-colors"
-                      />
+                {/* Header - Updated with new gradient colors */}
+                <header className="py-3 md:py-4 animate-fade-in-down">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+                    <div>
+                      <h1 className="text-2xl md:text-4xl font-black tracking-tight">
+                        <span
+                          className="bg-clip-text text-transparent"
+                          style={{
+                            backgroundImage: "linear-gradient(135deg, #e91e7e)",
+                          }}
+                        >
+                          Schedule Session
+                        </span>
+                      </h1>
+                      <p className="text-sm text-slate-400 mt-1 font-medium">
+                        Book your personalized therapy session
+                      </p>
                     </div>
-                    <RippleButton
-                      onClick={fetchSlots}
-                      disabled={loadingSlots}
-                      className="px-8 py-4 bg-linear-to-r from-[#3F2965] to-[#4a3275] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-200 hover:opacity-90 transition-all disabled:opacity-50"
-                    >
-                      {loadingSlots ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <>
-                          <Search size={16} className="md:w-4.5 md:h-4.5" />
-                          <span className="hidden sm:inline">Find Slots</span>
-                        </>
-                      )}
-                    </RippleButton>
+                    <ProgressStepper currentStep={currentStep} />
                   </div>
-                </div>
+                </header>
 
-                {/* Session Type */}
-                <SessionTypeToggle
-                  sessionType={sessionType}
-                  setSessionType={setSessionType}
-                />
-
-                {/* Payment Method Selector - Only shown for offline sessions */}
-                {sessionType === "offline" && (
-                  <PaymentMethodSelector
-                    paymentMethod={paymentMethod}
-                    setPaymentMethod={setPaymentMethod}
-                    walletBalance={user?.walletBalance}
-                  />
-                )}
-
-                {/* Time Slots */}
-                <div className="space-y-10">
-                  {loadingSlots ? (
-                    <div className="space-y-8">
-                      <div>
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 rounded-2xl skeleton" />
-                          <div className="space-y-2">
-                            <div className="w-24 h-4 skeleton rounded" />
-                            <div className="w-16 h-3 skeleton rounded" />
-                          </div>
-                        </div>
-                        <SlotSkeleton />
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 overflow-hidden pb-4">
+                  {/* Sidebar */}
+                  <aside className="flex flex-col gap-4 md:gap-6 overflow-hidden animate-fade-in-left">
+                    <div className="glass p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-white/50 shadow-xl shadow-purple-100/20 flex-1 overflow-y-auto custom-scrollbar max-h-100 lg:max-h-none">
+                      <h2 className="font-black text-base md:text-lg mb-4 md:mb-6 text-[#3F2965] flex items-center gap-2">
+                        <Sparkles size={20} className="text-[#Dd1764]" />
+                        THERAPY TYPE
+                      </h2>
+                      <div className="space-y-2">
+                        {therapies.map((t, index) => (
+                          <TherapyCard
+                            key={t}
+                            therapy={t}
+                            isSelected={selectedTherapy === t}
+                            onClick={() => setSelectedTherapy(t)}
+                            index={index}
+                          />
+                        ))}
                       </div>
                     </div>
-                  ) : availableSlots.length === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <>
-                      {morningSlots.length > 0 && (
-                        <SlotGroup
-                          title="Morning"
-                          icon={<Sun size={18} />}
-                          slots={morningSlots}
-                          selectedSlot={selectedSlot}
-                          onSelect={setSelectedSlot}
-                          formatter={formatTo12Hr}
-                        />
-                      )}
-                      {eveningSlots.length > 0 && (
-                        <SlotGroup
-                          title="Afternoon & Evening"
-                          icon={<Moon size={18} />}
-                          slots={eveningSlots}
-                          selectedSlot={selectedSlot}
-                          onSelect={setSelectedSlot}
-                          formatter={formatTo12Hr}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
 
-                {/* Notes */}
-                <div className="mt-8 md:mt-12 animate-fade-in-up delay-400">
-                  <SectionTitle
-                    icon={
-                      <MessageSquare size={16} className="md:w-4.5 md:h-4.5" />
-                    }
-                    title="Session Notes"
-                    subtitle="Private & Confidential"
-                  />
-                  <div className="relative">
-                    <textarea
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder="Share any specific concerns or topics you'd like to discuss..."
-                      className="w-full mt-2 md:mt-3 p-3 md:p-5 rounded-2xl md:rounded-3xl bg-slate-50 h-28 md:h-32 resize-none text-xs md:text-sm font-medium outline-none border-2 border-transparent focus:border-[#3F2965]/20 transition-colors"
-                    />
-                    <div className="absolute bottom-4 right-4 text-[10px] font-bold text-slate-300">
-                      {note.length}/500
+                    <div className="glass p-4 md:p-6 rounded-2xl md:rounded-4xl border border-white/50 shadow-xl shadow-purple-100/20 shrink-0 animate-fade-in-up delay-300">
+                      <h3 className="font-black mb-3 md:mb-4 flex items-center gap-2 text-[10px] md:text-xs uppercase text-[#3F2965]">
+                        <Info
+                          size={14}
+                          className="text-[#Dd1764] md:w-4 md:h-4"
+                        />{" "}
+                        Session Details
+                      </h3>
+                      <div className="space-y-2 md:space-y-3">
+                        {[
+                          {
+                            label: "Duration",
+                            value: "60 Minutes",
+                            icon: Clock,
+                          },
+                          { label: "Session Fee", value: "₹500", icon: Wallet },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="flex items-center justify-between text-xs font-bold p-3 bg-slate-50 rounded-xl"
+                          >
+                            <span className="text-slate-400 flex items-center gap-2">
+                              <item.icon size={14} />
+                              {item.label}
+                            </span>
+                            <span className="text-[#3F2965]">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  </aside>
 
-              {/* Footer */}
-              <div className="p-4 md:p-8 border-t border-slate-100 bg-white/80 backdrop-blur-sm shrink-0">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
-                  <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
+                  {/* Main Content */}
+                  <section className="lg:col-span-2 glass rounded-[2.5rem] border border-white/50 shadow-xl shadow-purple-100/20 flex flex-col overflow-hidden animate-fade-in-right">
                     <div
-                      className={`p-2 md:p-3 rounded-xl md:rounded-2xl ${
-                        isPaidViaWallet
-                          ? "bg-linear-to-br from-green-50 to-emerald-50 text-green-600"
-                          : "bg-linear-to-br from-amber-50 to-orange-50 text-amber-600"
-                      }`}
+                      ref={scrollableRef}
+                      className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12 custom-scrollbar"
                     >
-                      {isPaidViaWallet ? (
-                        <Wallet size={20} className="md:w-6 md:h-6" />
-                      ) : (
-                        <Banknote size={20} className="md:w-6 md:h-6" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-wide md:tracking-widest">
-                        Payment Method
-                      </p>
-                      <p className="text-xs md:text-sm font-bold text-[#3F2965]">
-                        {isPaidViaWallet
-                          ? `Wallet Balance: ₹${user?.walletBalance || 0}`
-                          : "Cash Payment at Clinic"}
-                      </p>
-                    </div>
-                  </div>
+                      <ErrorAlert
+                        message={errorMsg}
+                        onClose={() => setErrorMsg("")}
+                      />
 
-                  <RippleButton
-                    disabled={submitting || !selectedSlot || !availabilityId}
-                    onClick={initiateBooking}
-                    className={`
+                      {/* Date Picker */}
+                      <div className="mb-6 md:mb-10 animate-fade-in-up">
+                        <SectionTitle
+                          icon={
+                            <CalendarIcon
+                              size={16}
+                              className="md:w-4.5 md:h-4.5"
+                            />
+                          }
+                          title="Choose Date"
+                          subtitle="Select your preferred date"
+                        />
+                        <div className="flex flex-col sm:flex-row items-stretch gap-2 md:gap-3 mt-2 md:mt-3">
+                          <div className="relative flex-1">
+                            <input
+                              type="date"
+                              min={new Date().toISOString().split("T")[0]}
+                              value={selectedDate}
+                              onChange={(e) => setSelectedDate(e.target.value)}
+                              className="w-full p-4 pr-12 rounded-2xl bg-slate-50 font-bold text-[#3F2965] outline-none border-2 border-transparent focus:border-[#3F2965]/20 transition-colors"
+                            />
+                          </div>
+                          <RippleButton
+                            onClick={fetchSlots}
+                            disabled={loadingSlots}
+                            className="px-8 py-4 bg-linear-to-r from-[#3F2965] to-[#4a3275] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-200 hover:opacity-90 transition-all disabled:opacity-50"
+                          >
+                            {loadingSlots ? (
+                              <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                              <>
+                                <Search
+                                  size={16}
+                                  className="md:w-4.5 md:h-4.5"
+                                />
+                                <span className="hidden sm:inline">
+                                  Find Slots
+                                </span>
+                              </>
+                            )}
+                          </RippleButton>
+                        </div>
+                      </div>
+
+                      {/* Session Type */}
+                      <SessionTypeToggle
+                        sessionType={sessionType}
+                        setSessionType={setSessionType}
+                      />
+
+                      {/* Payment Method Selector - Only shown for offline sessions */}
+                      {sessionType === "offline" && (
+                        <PaymentMethodSelector
+                          paymentMethod={paymentMethod}
+                          setPaymentMethod={setPaymentMethod}
+                          walletBalance={user?.walletBalance}
+                        />
+                      )}
+
+                      {/* Time Slots */}
+                      <div className="space-y-10">
+                        {loadingSlots ? (
+                          <div className="space-y-8">
+                            <div>
+                              <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-2xl skeleton" />
+                                <div className="space-y-2">
+                                  <div className="w-24 h-4 skeleton rounded" />
+                                  <div className="w-16 h-3 skeleton rounded" />
+                                </div>
+                              </div>
+                              <SlotSkeleton />
+                            </div>
+                          </div>
+                        ) : availableSlots.length === 0 ? (
+                          <EmptyState />
+                        ) : (
+                          <>
+                            {morningSlots.length > 0 && (
+                              <SlotGroup
+                                title="Morning"
+                                icon={<Sun size={18} />}
+                                slots={morningSlots}
+                                selectedSlot={selectedSlot}
+                                onSelect={setSelectedSlot}
+                                formatter={formatTo12Hr}
+                              />
+                            )}
+                            {eveningSlots.length > 0 && (
+                              <SlotGroup
+                                title="Afternoon & Evening"
+                                icon={<Moon size={18} />}
+                                slots={eveningSlots}
+                                selectedSlot={selectedSlot}
+                                onSelect={setSelectedSlot}
+                                formatter={formatTo12Hr}
+                              />
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Notes */}
+                      <div className="mt-8 md:mt-12 animate-fade-in-up delay-400">
+                        <SectionTitle
+                          icon={
+                            <MessageSquare
+                              size={16}
+                              className="md:w-4.5 md:h-4.5"
+                            />
+                          }
+                          title="Session Notes"
+                          subtitle="Private & Confidential"
+                        />
+                        <div className="relative">
+                          <textarea
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            placeholder="Share any specific concerns or topics you'd like to discuss..."
+                            className="w-full mt-2 md:mt-3 p-3 md:p-5 rounded-2xl md:rounded-3xl bg-slate-50 h-28 md:h-32 resize-none text-xs md:text-sm font-medium outline-none border-2 border-transparent focus:border-[#3F2965]/20 transition-colors"
+                          />
+                          <div className="absolute bottom-4 right-4 text-[10px] font-bold text-slate-300">
+                            {note.length}/500
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-4 md:p-8 border-t border-slate-100 bg-white/80 backdrop-blur-sm shrink-0">
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+                        <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
+                          <div
+                            className={`p-2 md:p-3 rounded-xl md:rounded-2xl ${
+                              isPaidViaWallet
+                                ? "bg-linear-to-br from-green-50 to-emerald-50 text-green-600"
+                                : "bg-linear-to-br from-amber-50 to-orange-50 text-amber-600"
+                            }`}
+                          >
+                            {isPaidViaWallet ? (
+                              <Wallet size={20} className="md:w-6 md:h-6" />
+                            ) : (
+                              <Banknote size={20} className="md:w-6 md:h-6" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[9px] md:text-[10px] font-black text-slate-300 uppercase tracking-wide md:tracking-widest">
+                              Payment Method
+                            </p>
+                            <p className="text-xs md:text-sm font-bold text-[#3F2965]">
+                              {isPaidViaWallet
+                                ? `Wallet Balance: ₹${user?.walletBalance || 0}`
+                                : "Cash Payment at Clinic"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <RippleButton
+                          disabled={
+                            submitting || !selectedSlot || !availabilityId
+                          }
+                          onClick={initiateBooking}
+                          className={`
                       w-full md:w-auto px-6 md:px-12 py-3.5 md:py-5 
                       bg-linear-to-r from-[#Dd1764] to-[#e91e7e] 
                       text-white font-black rounded-xl md:rounded-2xl 
@@ -1300,31 +1324,36 @@ const BookingPage = () => {
                       text-xs md:text-base
                       ${selectedSlot && !submitting ? "animate-glow" : ""}
                     `}
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        <span className="hidden sm:inline">Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check size={18} />
-                        <span>
-                          {isPaidViaWallet
-                            ? "Confirm & Pay ₹500"
-                            : "Confirm Booking"}
-                        </span>
-                      </>
-                    )}
-                  </RippleButton>
+                        >
+                          {submitting ? (
+                            <>
+                              <Loader2 className="animate-spin" size={18} />
+                              <span className="hidden sm:inline">
+                                Processing...
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Check size={18} />
+                              <span>
+                                {isPaidViaWallet
+                                  ? "Confirm & Pay ₹500"
+                                  : "Confirm Booking"}
+                              </span>
+                            </>
+                          )}
+                        </RippleButton>
+                      </div>
+                    </div>
+                  </section>
                 </div>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
-      <Footer />
-    </>
+              </main>
+            </div>
+            <Footer />
+          </>
+        </IsProfileCompleteUser>
+      </IsVerifiedUser>
+    </IsLoginUser>
   );
 };
 

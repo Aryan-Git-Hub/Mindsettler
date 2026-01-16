@@ -1,33 +1,25 @@
 import { useState, useRef } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Search,
   BookOpen,
   Clock,
   ArrowRight,
   Heart,
-  Share2,
   Bookmark,
-  Filter,
   TrendingUp,
   Star,
   ExternalLink,
-  ChevronDown,
-  Sparkles,
   Brain,
   Users,
   Smile,
-  Shield,
   Lightbulb,
   Target,
 } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { useAuth } from "../context/AuthContext";
+import { IsLoginUser, IsVerifiedUser, IsProfileCompleteUser } from "../components/auth/Verification";
 
 const ResourcesPage = () => {
   const containerRef = useRef(null);
@@ -35,7 +27,7 @@ const ResourcesPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [savedArticles, setSavedArticles] = useState([]);
   const [likedArticles, setLikedArticles] = useState([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -617,82 +609,85 @@ const ResourcesPage = () => {
   );
 
   return (
-    <>
-      <Navbar />
-      <div ref={containerRef} className="min-h-screen overflow-hidden">
-        {/* Hero Section */}
-        <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-          {/* Animated Background */}
-          <motion.div
-            className="absolute inset-0 z-0"
-            style={{ y: backgroundY }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
+    <IsLoginUser user={user}>
+      <IsVerifiedUser user={user}>
+        <IsProfileCompleteUser user={user}>
+          <>
+            <Navbar />
+            <div ref={containerRef} className="min-h-screen overflow-hidden">
+              {/* Hero Section */}
+              <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+                {/* Animated Background */}
+                <motion.div
+                  className="absolute inset-0 z-0"
+                  style={{ y: backgroundY }}
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `
                   radial-gradient(ellipse at 20% 20%, rgba(63,41,101,0.15) 0%, transparent 50%),
                   radial-gradient(ellipse at 80% 80%, rgba(221,23,100,0.1) 0%, transparent 50%),
                   radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.08) 0%, transparent 70%),
                   linear-gradient(135deg, #faf5ff 0%, #f3e8ff 25%, #fce7f3 50%, #fdf2f8 75%, #f5f3ff 100%)
                 `,
-              }}
-            />
+                    }}
+                  />
 
-            {/* Floating Elements */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full bg-gradient-to-br from-[#3F2965]/10 to-[#Dd1764]/10"
-                style={{
-                  width: `${60 + i * 30}px`,
-                  height: `${60 + i * 30}px`,
-                  left: `${10 + i * 12}%`,
-                  top: `${15 + (i % 4) * 20}%`,
-                }}
-                animate={{
-                  y: [0, -20, 0],
-                  scale: [1, 1.05, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 4 + i,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.3,
-                }}
-              />
-            ))}
-          </motion.div>
+                  {/* Floating Elements */}
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute rounded-full bg-gradient-to-br from-[#3F2965]/10 to-[#Dd1764]/10"
+                      style={{
+                        width: `${60 + i * 30}px`,
+                        height: `${60 + i * 30}px`,
+                        left: `${10 + i * 12}%`,
+                        top: `${15 + (i % 4) * 20}%`,
+                      }}
+                      animate={{
+                        y: [0, -20, 0],
+                        scale: [1, 1.05, 1],
+                        opacity: [0.3, 0.6, 0.3],
+                      }}
+                      transition={{
+                        duration: 4 + i,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: i * 0.3,
+                      }}
+                    />
+                  ))}
+                </motion.div>
 
-          {/* Hero Content */}
-          <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-16 text-center">
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-5xl md:text-7xl font-serif font-bold mb-6"
-            >
-              <span className="text-[#3F2965]">Blogs & </span>
-              <span className="italic bg-gradient-to-r from-[#Dd1764] via-[#7c3aed] to-[#3F2965] bg-clip-text text-transparent">
-                Articles
-              </span>
-            </motion.h1>
+                {/* Hero Content */}
+                <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-16 text-center">
+                  {/* Title */}
+                  <motion.h1
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="text-5xl md:text-7xl font-serif font-bold mb-6"
+                  >
+                    <span className="text-[#3F2965]">Blogs & </span>
+                    <span className="italic bg-gradient-to-r from-[#Dd1764] via-[#7c3aed] to-[#3F2965] bg-clip-text text-transparent">
+                      Articles
+                    </span>
+                  </motion.h1>
 
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-[#3F2965]/70 text-lg md:text-xl max-w-2xl mx-auto mb-10"
-            >
-              Curated mental health resources from trusted sources to support
-              your wellness journey
-            </motion.p>
+                  {/* Subtitle */}
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-[#3F2965]/70 text-lg md:text-xl max-w-2xl mx-auto mb-10"
+                  >
+                    Curated mental health resources from trusted sources to
+                    support your wellness journey
+                  </motion.p>
 
-            {/* Stats */}
-            {/* <motion.div
+                  {/* Stats */}
+                  {/* <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
@@ -714,279 +709,286 @@ const ResourcesPage = () => {
                 </div>
               ))}
             </motion.div> */}
-          </div>
-        </section>
+                </div>
+              </section>
 
-        {/* Categories Section */}
-        <section className="py-8 bg-white/50 backdrop-blur-sm sticky top-0 z-30 border-b border-[#3F2965]/10">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {categories.map((category, index) => (
-                <motion.button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-full whitespace-nowrap transition-all ${
-                    activeCategory === category.id
-                      ? "bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white shadow-lg"
-                      : "bg-white text-[#3F2965] hover:bg-[#3F2965]/5 border border-[#3F2965]/10"
-                  }`}
-                >
-                  <category.icon className="w-4 h-4" />
-                  <span className="font-medium text-sm">{category.name}</span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      activeCategory === category.id
-                        ? "bg-white/20"
-                        : "bg-[#3F2965]/10"
-                    }`}
+              {/* Categories Section */}
+              <section className="py-8 bg-white/50 backdrop-blur-sm sticky top-0 z-30 border-b border-[#3F2965]/10">
+                <div className="max-w-7xl mx-auto px-6">
+                  <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                    {categories.map((category, index) => (
+                      <motion.button
+                        key={category.id}
+                        onClick={() => setActiveCategory(category.id)}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-full whitespace-nowrap transition-all ${
+                          activeCategory === category.id
+                            ? "bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white shadow-lg"
+                            : "bg-white text-[#3F2965] hover:bg-[#3F2965]/5 border border-[#3F2965]/10"
+                        }`}
+                      >
+                        <category.icon className="w-4 h-4" />
+                        <span className="font-medium text-sm">
+                          {category.name}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            activeCategory === category.id
+                              ? "bg-white/20"
+                              : "bg-[#3F2965]/10"
+                          }`}
+                        >
+                          {category.count}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Featured Articles */}
+              <section className="py-16 bg-gradient-to-b from-[#faf5ff] to-white">
+                <div className="max-w-7xl mx-auto px-6">
+                  {/* Section Header */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="flex items-center justify-between mb-10"
                   >
-                    {category.count}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        </section>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-5 h-5 text-[#Dd1764]" />
+                        <span className="text-[#Dd1764] font-bold tracking-wider uppercase text-sm">
+                          Featured
+                        </span>
+                      </div>
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#3F2965]">
+                        Editor's{" "}
+                        <span className="italic text-[#Dd1764]">Picks</span>
+                      </h2>
+                    </div>
+                  </motion.div>
 
-        {/* Featured Articles */}
-        <section className="py-16 bg-gradient-to-b from-[#faf5ff] to-white">
-          <div className="max-w-7xl mx-auto px-6">
-            {/* Section Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex items-center justify-between mb-10"
-            >
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-[#Dd1764]" />
-                  <span className="text-[#Dd1764] font-bold tracking-wider uppercase text-sm">
-                    Featured
-                  </span>
+                  {/* Featured Grid */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredArticles.slice(0, 3).map((article, index) => (
+                      <ArticleCard
+                        key={article.id}
+                        article={article}
+                        index={index}
+                        featured={index === 0}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#3F2965]">
-                  Editor's <span className="italic text-[#Dd1764]">Picks</span>
-                </h2>
-              </div>
-            </motion.div>
+              </section>
 
-            {/* Featured Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredArticles.slice(0, 3).map((article, index) => (
-                <ArticleCard
-                  key={article.id}
-                  article={article}
-                  index={index}
-                  featured={index === 0}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+              {/* All Articles */}
+              <section className="py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                  {/* Section Header */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="flex items-center justify-between mb-10"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="w-5 h-5 text-[#Dd1764]" />
+                        <span className="text-[#Dd1764] font-bold tracking-wider uppercase text-sm">
+                          All Resources
+                        </span>
+                      </div>
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#3F2965]">
+                        Browse{" "}
+                        <span className="italic text-[#Dd1764]">
+                          {activeCategory === "all"
+                            ? "All Articles"
+                            : categories.find((c) => c.id === activeCategory)
+                                ?.name}
+                        </span>
+                      </h2>
+                    </div>
+                    <p className="text-[#3F2965]/60">
+                      {filteredArticles.length} article
+                      {filteredArticles.length !== 1 ? "s" : ""} found
+                    </p>
+                  </motion.div>
 
-        {/* All Articles */}
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            {/* Section Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex items-center justify-between mb-10"
-            >
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <BookOpen className="w-5 h-5 text-[#Dd1764]" />
-                  <span className="text-[#Dd1764] font-bold tracking-wider uppercase text-sm">
-                    All Resources
-                  </span>
+                  {/* Articles Grid */}
+                  {filteredArticles.length > 0 ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filteredArticles.map((article, index) => (
+                        <ArticleCard
+                          key={article.id}
+                          article={article}
+                          index={index}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-20"
+                    >
+                      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#3F2965]/10 flex items-center justify-center">
+                        <Search className="w-10 h-10 text-[#3F2965]/40" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-[#3F2965] mb-3">
+                        No articles found
+                      </h3>
+                      <p className="text-[#3F2965]/60 mb-6">
+                        Try adjusting your search or filter criteria
+                      </p>
+                      <motion.button
+                        onClick={() => {
+                          setSearchQuery("");
+                          setActiveCategory("all");
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-3 bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white font-bold rounded-full"
+                      >
+                        Clear Filters
+                      </motion.button>
+                    </motion.div>
+                  )}
                 </div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#3F2965]">
-                  Browse{" "}
-                  <span className="italic text-[#Dd1764]">
-                    {activeCategory === "all"
-                      ? "All Articles"
-                      : categories.find((c) => c.id === activeCategory)?.name}
-                  </span>
-                </h2>
-              </div>
-              <p className="text-[#3F2965]/60">
-                {filteredArticles.length} article
-                {filteredArticles.length !== 1 ? "s" : ""} found
-              </p>
-            </motion.div>
+              </section>
 
-            {/* Articles Grid */}
-            {filteredArticles.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredArticles.map((article, index) => (
-                  <ArticleCard
-                    key={article.id}
-                    article={article}
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-20"
-              >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#3F2965]/10 flex items-center justify-center">
-                  <Search className="w-10 h-10 text-[#3F2965]/40" />
-                </div>
-                <h3 className="text-2xl font-bold text-[#3F2965] mb-3">
-                  No articles found
-                </h3>
-                <p className="text-[#3F2965]/60 mb-6">
-                  Try adjusting your search or filter criteria
-                </p>
-                <motion.button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setActiveCategory("all");
+              {/* Resources CTA */}
+              <section className="py-20 relative overflow-hidden">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(135deg, #3F2965 0%, #5a3d7a 50%, #Dd1764 100%)`,
                   }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-6 py-3 bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white font-bold rounded-full"
-                >
-                  Clear Filters
-                </motion.button>
-              </motion.div>
-            )}
-          </div>
-        </section>
+                />
 
-        {/* Resources CTA */}
-        <section className="py-20 relative overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg, #3F2965 0%, #5a3d7a 50%, #Dd1764 100%)`,
-            }}
-          />
-
-          {/* Decorative Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div
-              className="absolute top-10 left-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 5, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute bottom-10 right-10 w-96 h-96 bg-white/5 rounded-full blur-3xl"
-              animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 5, repeat: Infinity, delay: 2.5 }}
-            />
-          </div>
-
-          <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <Lightbulb className="w-16 h-16 text-white/80 mx-auto mb-6" />
-              <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-6">
-                Need Personalized Support?
-              </h2>
-              <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">
-                While these resources are helpful, sometimes we need
-                personalized guidance. Book a session with our mental wellness
-                experts.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <motion.a
-                  href="/booking"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-[#3F2965] font-bold rounded-full shadow-xl hover:shadow-2xl transition-shadow"
-                >
-                  Book a Session
-                </motion.a>
-                <motion.a
-                  href="/aboutus"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-full border border-white/30 hover:bg-white/20 transition-colors"
-                >
-                  Learn About Us
-                </motion.a>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Newsletter Section */}
-        <section className="py-16 bg-gradient-to-b from-white to-[#faf5ff]">
-          <div className="max-w-4xl mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-[#3F2965]/5"
-            >
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#3F2965]/10 to-[#Dd1764]/10 flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-[#Dd1764]" />
+                {/* Decorative Elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                  <motion.div
+                    className="absolute top-10 left-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 5, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="absolute bottom-10 right-10 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+                    animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 5, repeat: Infinity, delay: 2.5 }}
+                  />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#3F2965] mb-4">
-                  Stay Updated with Mental Wellness Tips
-                </h3>
-                <p className="text-[#3F2965]/60 mb-8 max-w-lg mx-auto">
-                  Follow us on social media for daily insights, resources, and
-                  support on your wellness journey.
-                </p>
 
-                <div className="flex justify-center gap-4">
-                  <motion.a
-                    href="https://www.instagram.com/mindsettlerbypb"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center text-white shadow-lg"
+                <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                    </svg>
-                  </motion.a>
-                  <motion.a
-                    href="https://www.linkedin.com/in/parnika-bajaj-190719195/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -3 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-12 h-12 rounded-full bg-[#0A66C2] flex items-center justify-center text-white shadow-lg"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
-                  </motion.a>
+                    <Lightbulb className="w-16 h-16 text-white/80 mx-auto mb-6" />
+                    <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-6">
+                      Need Personalized Support?
+                    </h2>
+                    <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto">
+                      While these resources are helpful, sometimes we need
+                      personalized guidance. Book a session with our mental
+                      wellness experts.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <motion.a
+                        href="/booking"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-4 bg-white text-[#3F2965] font-bold rounded-full shadow-xl hover:shadow-2xl transition-shadow"
+                      >
+                        Book a Session
+                      </motion.a>
+                      <motion.a
+                        href="/aboutus"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-full border border-white/30 hover:bg-white/20 transition-colors"
+                      >
+                        Learn About Us
+                      </motion.a>
+                    </div>
+                  </motion.div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      </div>
-      <Footer />
-    </>
+              </section>
+
+              {/* Newsletter Section */}
+              <section className="py-16 bg-gradient-to-b from-white to-[#faf5ff]">
+                <div className="max-w-4xl mx-auto px-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-[#3F2965]/5"
+                  >
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-[#3F2965]/10 to-[#Dd1764]/10 flex items-center justify-center">
+                        <BookOpen className="w-8 h-8 text-[#Dd1764]" />
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#3F2965] mb-4">
+                        Stay Updated with Mental Wellness Tips
+                      </h3>
+                      <p className="text-[#3F2965]/60 mb-8 max-w-lg mx-auto">
+                        Follow us on social media for daily insights, resources,
+                        and support on your wellness journey.
+                      </p>
+
+                      <div className="flex justify-center gap-4">
+                        <motion.a
+                          href="https://www.instagram.com/mindsettlerbypb"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.1, y: -3 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="w-12 h-12 rounded-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center text-white shadow-lg"
+                        >
+                          <svg
+                            className="w-6 h-6"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                          </svg>
+                        </motion.a>
+                        <motion.a
+                          href="https://www.linkedin.com/in/parnika-bajaj-190719195/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.1, y: -3 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="w-12 h-12 rounded-full bg-[#0A66C2] flex items-center justify-center text-white shadow-lg"
+                        >
+                          <svg
+                            className="w-6 h-6"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                          </svg>
+                        </motion.a>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </section>
+            </div>
+            <Footer />
+          </>
+        </IsProfileCompleteUser>
+      </IsVerifiedUser>
+    </IsLoginUser>
   );
 };
 

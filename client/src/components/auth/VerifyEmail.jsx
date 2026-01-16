@@ -93,6 +93,7 @@ const VerifyEmail = ({ user, setUser }) => {
         );
 
       case "success":
+        user.isVerified = true; // Ensure user state is updated
         return (
           <div className="text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30 animate-in zoom-in duration-500">

@@ -14,7 +14,7 @@ export const globalLimiter = rateLimit({
 // Stricter limiter for Auth & Corporate Form
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes window
-  max: 10, // Start blocking after 10 failed attempts/requests
+  max: 15, // Start blocking after 10 failed attempts/requests
   message: {
     message: "Too many attempts. For security, please try again in an hour."
   },
