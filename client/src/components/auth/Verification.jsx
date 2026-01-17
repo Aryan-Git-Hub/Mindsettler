@@ -29,7 +29,7 @@ export const IsLoginUser = ({ user, children }) => {
 
   // Handle navigation to register
   const handleGoToRegister = () => {
-    navigate("/register", { state: { from: location.pathname } });
+    navigate("/auth", { state: { from: location.pathname } });
   };
 
   // Handle go back
