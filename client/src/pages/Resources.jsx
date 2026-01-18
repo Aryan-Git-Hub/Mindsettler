@@ -39,6 +39,7 @@ import {
   IsVerifiedUser,
   IsProfileCompleteUser,
 } from "../components/auth/Verification";
+import { ScrollProgressBar } from "../components/common/ScrollProgressBar";
 
 // ============== CUSTOM HOOKS ==============
 
@@ -58,76 +59,6 @@ const useMousePosition = () => {
 };
 
 // ============== ANIMATION COMPONENTS ==============
-
-// Custom Cursor Component
-const CustomCursor = () => {
-  const mousePosition = useMousePosition();
-  const [isHovering, setIsHovering] = useState(false);
-  const cursorX = useSpring(mousePosition.x, { stiffness: 500, damping: 28 });
-  const cursorY = useSpring(mousePosition.y, { stiffness: 500, damping: 28 });
-
-  useEffect(() => {
-    const handleMouseOver = (e) => {
-      if (e.target.closest("button, a, input, [data-hover]")) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
-    window.addEventListener("mouseover", handleMouseOver);
-    return () => window.removeEventListener("mouseover", handleMouseOver);
-  }, []);
-
-  return (
-    <>
-      <motion.div
-        className="fixed w-4 h-4 bg-[#Dd1764] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isHovering ? 2.5 : 1,
-          opacity: isHovering ? 0.5 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-      <motion.div
-        className="fixed w-10 h-10 border-2 border-[#3F2965] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isHovering ? 1.5 : 1,
-          opacity: isHovering ? 0 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-    </>
-  );
-};
-
-// Scroll Progress Indicator
-const ScrollProgress = () => {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
-
-  return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] via-[#7c3aed] to-[#Dd1764] z-50 origin-left"
-      style={{ scaleX }}
-    />
-  );
-};
 
 // Magnetic Button Component
 const MagneticButton = ({ children, className, onClick, href, target }) => {
@@ -1191,8 +1122,7 @@ const ResourcesPage = () => {
       <IsVerifiedUser user={user}>
         <IsProfileCompleteUser user={user}>
           <>
-            <CustomCursor />
-            <ScrollProgress />
+            <ScrollProgressBar />
             <Navbar />
 
             <div ref={containerRef} className="min-h-screen overflow-hidden">

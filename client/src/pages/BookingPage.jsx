@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView, useAnimation } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from "framer-motion";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -20,19 +20,15 @@ import {
   ChevronRight,
   Shield,
   Banknote,
-  Star,
   Heart,
-  Zap,
-  Coffee,
-  ChevronDown,
-  ArrowUpRight,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { IsLoginUser, IsVerifiedUser, IsProfileCompleteUser } from "../components/auth/Verification";
+import { ScrollProgressBar } from "../components/common/ScrollProgressBar";
 
 // ==================== CUSTOM HOOKS ====================
 
@@ -68,93 +64,6 @@ const useOnScreen = (ref, threshold = 0.1) => {
 };
 
 // ==================== ANIMATION COMPONENTS ====================
-
-// Custom Cursor Component
-const CustomCursor = () => {
-  const mousePosition = useMousePosition();
-  const [isHovering, setIsHovering] = useState(false);
-  const [isClicking, setIsClicking] = useState(false);
-  const cursorX = useSpring(mousePosition.x, { stiffness: 500, damping: 28 });
-  const cursorY = useSpring(mousePosition.y, { stiffness: 500, damping: 28 });
-
-  useEffect(() => {
-    const handleMouseOver = (e) => {
-      if (e.target.closest('button, a, input, textarea, [data-hover], .hover-target')) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
-    
-    const handleMouseDown = () => setIsClicking(true);
-    const handleMouseUp = () => setIsClicking(false);
-
-    window.addEventListener("mouseover", handleMouseOver);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-    
-    return () => {
-      window.removeEventListener("mouseover", handleMouseOver);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  return (
-    <>
-      <motion.div
-        className="fixed w-4 h-4 bg-[#DD1764] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isClicking ? 0.5 : isHovering ? 2.5 : 1,
-          opacity: isHovering ? 0.5 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-      <motion.div
-        className="fixed w-10 h-10 border-2 border-[#3F2965] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isClicking ? 1.8 : isHovering ? 1.5 : 1,
-          opacity: isClicking ? 0.3 : isHovering ? 0 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-    </>
-  );
-};
-
-// Scroll Progress Bar
-const ScrollProgressBar = () => {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const updateProgress = () => {
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrolled = window.scrollY;
-      setProgress(scrolled / scrollHeight);
-    };
-    window.addEventListener("scroll", updateProgress);
-    return () => window.removeEventListener("scroll", updateProgress);
-  }, []);
-
-  return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] via-[#DD1764] to-[#3F2965] z-[9999] origin-left"
-      style={{ scaleX: progress }}
-    />
-  );
-};
 
 // Magnetic Button Component
 const MagneticButton = ({ children, className, onClick, disabled, type = "button", ...props }) => {
@@ -1645,9 +1554,6 @@ const [pageLoaded, setPageLoaded] = useState(false);
                 background: #f1f5f9;
               }
             `}</style>
-
-            {/* Custom Cursor */}
-            <CustomCursor />
 
             {/* Scroll Progress Bar */}
             <ScrollProgressBar />

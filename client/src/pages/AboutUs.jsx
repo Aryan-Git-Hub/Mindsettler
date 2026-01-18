@@ -12,6 +12,7 @@ import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import introVideo from "../assets/video/IMG_2808.MOV";
 import { Link } from "react-router";
+import { ScrollProgressBar } from "../components/common/ScrollProgressBar";
 
 // Custom Hook for Mouse Position
 const useMousePosition = () => {
@@ -143,53 +144,6 @@ const FloatingParticles = () => {
   );
 };
 
-// Scroll Progress Indicator
-const ScrollProgress = () => {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
-
-  return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#3F2965] via-[#7c3aed] to-[#Dd1764] z-50 origin-left"
-      style={{ scaleX }}
-    />
-  );
-};
-
-// Custom Cursor Component
-const CustomCursor = () => {
-  const mousePosition = useMousePosition();
-  const cursorX = useSpring(mousePosition.x, { stiffness: 500, damping: 28 });
-  const cursorY = useSpring(mousePosition.y, { stiffness: 500, damping: 28 });
-
-  return (
-    <>
-      <motion.div
-        className="fixed w-4 h-4 bg-[#Dd1764] rounded-full pointer-events-none z-[9999] mix-blend-difference"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-      />
-      <motion.div
-        className="fixed w-10 h-10 border-2 border-[#3F2965] rounded-full pointer-events-none z-[9999] mix-blend-difference"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        transition={{ type: "spring", stiffness: 150, damping: 15 }}
-      />
-    </>
-  );
-};
 
 // Staggered Text Animation
 const StaggerText = ({ text, className, delay = 0 }) => {
@@ -507,8 +461,7 @@ const AboutUsPage = () => {
 
   return (
     <>
-      <CustomCursor />
-      <ScrollProgress />
+      <ScrollProgressBar />
       <Navbar />
       
       <div ref={containerRef} className="min-h-screen overflow-hidden">

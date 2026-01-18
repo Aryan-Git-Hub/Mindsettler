@@ -29,10 +29,12 @@ import {
   Zap,
   CheckCircle,
   Play,
+  Scroll,
 } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer.jsx";
 import API from "../api/axios";
+import { ScrollProgressBar } from "../components/common/ScrollProgressBar.jsx";
 
 const CorporateServices = () => {
   const containerRef = useRef(null);
@@ -260,6 +262,7 @@ const CorporateServices = () => {
 
   return (
     <>
+      <ScrollProgressBar />
       <Navbar />
       <div ref={containerRef} className="min-h-screen overflow-hidden">
         {/* Hero Section */}

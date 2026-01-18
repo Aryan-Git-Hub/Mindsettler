@@ -53,36 +53,6 @@ const MagneticButton = ({ children, className, onClick }) => {
   );
 };
 
-// Custom Cursor Component
-const CustomCursor = () => {
-  const mousePosition = useMousePosition();
-  const cursorX = useSpring(mousePosition.x, { stiffness: 500, damping: 28 });
-  const cursorY = useSpring(mousePosition.y, { stiffness: 500, damping: 28 });
-
-  return (
-    <>
-      <motion.div
-        className="fixed w-4 h-4 bg-[#Dd1764] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-      />
-      <motion.div
-        className="fixed w-10 h-10 border-2 border-[#3F2965] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-      />
-    </>
-  );
-};
-
 // Floating Particle Component
 const FloatingParticle = ({ delay, duration, size, initialX, initialY }) => {
   return (
@@ -392,8 +362,6 @@ const PageNotFound = () => {
 
   return (
     <>
-      <CustomCursor />
-
       <div className="min-h-screen relative overflow-hidden">
         {/* Animated Background */}
         <div

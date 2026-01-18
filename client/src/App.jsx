@@ -11,7 +11,7 @@ import BookingPage from "./pages/BookingPage.jsx";
 import CorporateServices from "./pages/CorporateServices.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import ChatWidget from "./components/chatbot/ChatWidget.jsx";
-import AboutUsPage from "./pages/aboutUs.jsx";
+import AboutUsPage from "./pages/AboutUs.jsx";
 import ResourcesPage from "./pages/Resources.jsx";
 import VerifyEmail from "./components/auth/VerifyEmail.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";

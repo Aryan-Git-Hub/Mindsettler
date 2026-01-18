@@ -30,6 +30,7 @@ import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import API from "../api/axios";
 import FAQSection from "../components/common/FAQ";
+import { ScrollProgressBar } from "../components/common/ScrollProgressBar";
 
 // ============== CUSTOM HOOKS ==============
 
@@ -49,59 +50,6 @@ const useMousePosition = () => {
 };
 
 // ============== ANIMATION COMPONENTS ==============
-
-// Custom Cursor Component
-const CustomCursor = () => {
-  const mousePosition = useMousePosition();
-  const [isHovering, setIsHovering] = useState(false);
-  const cursorX = useSpring(mousePosition.x, { stiffness: 500, damping: 28 });
-  const cursorY = useSpring(mousePosition.y, { stiffness: 500, damping: 28 });
-
-  useEffect(() => {
-    const handleMouseOver = (e) => {
-      if (e.target.closest("button, a, input, textarea, [data-hover]")) {
-        setIsHovering(true);
-      } else {
-        setIsHovering(false);
-      }
-    };
-    window.addEventListener("mouseover", handleMouseOver);
-    return () => window.removeEventListener("mouseover", handleMouseOver);
-  }, []);
-
-  return (
-    <>
-      <motion.div
-        className="fixed w-4 h-4 bg-[#Dd1764] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isHovering ? 2.5 : 1,
-          opacity: isHovering ? 0.5 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-      <motion.div
-        className="fixed w-10 h-10 border-2 border-[#3F2965] rounded-full pointer-events-none z-[9999] mix-blend-difference hidden lg:block"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isHovering ? 1.5 : 1,
-          opacity: isHovering ? 0 : 1,
-        }}
-        transition={{ duration: 0.2 }}
-      />
-    </>
-  );
-};
 
 // Magnetic Button Component
 const MagneticButton = ({
@@ -1100,8 +1048,7 @@ const ContactPage = () => {
 
   return (
     <>
-      <CustomCursor />
-
+      <ScrollProgressBar />
       <Navbar />
 
       <div
