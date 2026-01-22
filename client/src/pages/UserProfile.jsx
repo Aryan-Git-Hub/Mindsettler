@@ -157,7 +157,7 @@ const UserProfileView = ({ user, setUser }) => {
                   disabled={!isEditing}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-sm transition-all duration-300 ${
+                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-base transition-all duration-300 ${
                     isEditing 
                       ? "border-[#3F2965]/20 focus:border-[#3F2965] focus:bg-white focus:shadow-lg" 
                       : "border-transparent opacity-70"
@@ -180,7 +180,7 @@ const UserProfileView = ({ user, setUser }) => {
                 <input
                   disabled
                   value={user.email}
-                  className="w-full p-4 bg-slate-50/80 border-2 border-transparent rounded-xl font-medium text-sm opacity-60 cursor-not-allowed"
+                  className="w-full p-4 bg-slate-50/80 border-2 border-transparent rounded-xl font-medium text-base opacity-60 cursor-not-allowed"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <Shield size={14} className="text-green-400" />
@@ -199,7 +199,7 @@ const UserProfileView = ({ user, setUser }) => {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="Enter your phone number"
-                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-sm transition-all duration-300 ${
+                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-base transition-all duration-300 ${
                     isEditing 
                       ? "border-[#3F2965]/20 focus:border-[#3F2965] focus:bg-white focus:shadow-lg" 
                       : "border-transparent opacity-70"
@@ -218,7 +218,7 @@ const UserProfileView = ({ user, setUser }) => {
                   disabled={!isEditing}
                   value={formData.gender}
                   onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-sm transition-all duration-300 appearance-none cursor-pointer ${
+                  className={`w-full p-4 bg-slate-50/80 border-2 rounded-xl font-medium text-base transition-all duration-300 appearance-none cursor-pointer ${
                     isEditing 
                       ? "border-[#3F2965]/20 focus:border-[#3F2965] focus:bg-white focus:shadow-lg" 
                       : "border-transparent opacity-70"

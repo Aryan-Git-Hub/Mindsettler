@@ -55,7 +55,7 @@ export const IsLoginUser = ({ user, children }) => {
       </div>
 
       {/* Popup Overlay */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ touchAction: 'manipulation' }}>
         {/* Backdrop */}
         <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
@@ -63,7 +63,7 @@ export const IsLoginUser = ({ user, children }) => {
         />
 
         {/* Popup Card */}
-        <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto">
           {/* Close Button */}
           <button
             onClick={handleGoHome}
@@ -188,7 +188,7 @@ export const IsVerifiedUser = ({ user, children }) => {
       </div>
 
       {/* Popup Overlay */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ touchAction: 'manipulation' }}>
         {/* Backdrop */}
         <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
@@ -196,7 +196,7 @@ export const IsVerifiedUser = ({ user, children }) => {
         />
 
         {/* Popup Card */}
-        <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto">
           {/* Close Button */}
           <button
             onClick={handleGoHome}
@@ -414,7 +414,7 @@ export const IsProfileCompleteUser = ({ user, children, requiredFields = ["name"
 
       {/* Popup Overlay */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ touchAction: 'manipulation' }}>
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
@@ -422,7 +422,7 @@ export const IsProfileCompleteUser = ({ user, children, requiredFields = ["name"
           />
 
           {/* Popup Card */}
-          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
               onClick={handleGoHome}

@@ -116,3 +116,41 @@ button:focus {
   background: #Dd1764;
   color: white;
 }
+
+/* ========== MOBILE ZOOM PREVENTION ========== */
+/* Prevent iOS Safari from zooming on input focus */
+@media screen and (max-width: 768px) {
+  /* Ensure inputs have 16px font size to prevent zoom on iOS */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Modal overlay touch handling */
+  .fixed.inset-0 {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Prevent double-tap zoom on buttons */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* Modal container - prevent scroll while modal is open */
+body:has(.fixed.inset-0.z-50) {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Ensure modal cards are properly sized on mobile */
+@media screen and (max-width: 640px) {
+  .max-w-sm {
+    max-width: calc(100vw - 2rem);
+  }
+}

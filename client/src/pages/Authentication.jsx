@@ -148,7 +148,7 @@ const Input = ({ icon, label, rightIcon, error, ...props }) => (
             focus:border-[#3F2965]/30 focus:bg-white
             outline-none transition-all duration-300
             text-[#3F2965] placeholder-[#6B4D8A]/30
-            text-sm sm:text-base font-medium
+            text-base font-medium
             shadow-sm focus:shadow-lg focus:shadow-[#3F2965]/5
           `}
         />

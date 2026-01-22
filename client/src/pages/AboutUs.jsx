@@ -13,6 +13,7 @@ import Navbar from "../components/common/Navbar";
 import introVideo from "../assets/video/IMG_2808.MOV";
 import { Link } from "react-router";
 import { ScrollProgressBar } from "../components/common/ScrollProgressBar";
+import useIsMobile from "../hooks/useIsMobile";
 
 // Custom Hook for Mouse Position
 const useMousePosition = () => {
@@ -29,12 +30,13 @@ const useMousePosition = () => {
   return mousePosition;
 };
 
-// Magnetic Button Component
-const MagneticButton = ({ children, className, onClick }) => {
+// Magnetic Button Component - disabled on mobile for performance
+const MagneticButton = ({ children, className, onClick, isMobile }) => {
   const ref = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const handleMouse = (e) => {
+    if (isMobile) return; // Skip on mobile
     const { clientX, clientY } = e;
     const { height, width, left, top } = ref.current.getBoundingClientRect();
     const middleX = clientX - (left + width / 2);
@@ -43,6 +45,15 @@ const MagneticButton = ({ children, className, onClick }) => {
   };
 
   const reset = () => setPosition({ x: 0, y: 0 });
+
+  // On mobile, render simple button without motion
+  if (isMobile) {
+    return (
+      <button ref={ref} onClick={onClick} className={className}>
+        {children}
+      </button>
+    );
+  }
 
   const { x, y } = position;
 
@@ -113,8 +124,11 @@ const AnimatedCounter = ({ value, suffix = "", duration = 2 }) => {
   );
 };
 
-// Floating Particles Component
-const FloatingParticles = () => {
+// Floating Particles Component - hidden on mobile for performance
+const FloatingParticles = ({ isMobile }) => {
+  // Don't render particles on mobile
+  if (isMobile) return null;
+  
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(20)].map((_, i) => (
@@ -186,20 +200,26 @@ const StaggerText = ({ text, className, delay = 0 }) => {
   );
 };
 
-// Glowing Card Component
-const GlowingCard = ({ children, className }) => {
+// Glowing Card Component - simplified on mobile
+const GlowingCard = ({ children, className, isMobile }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
   const handleMouseMove = useCallback(
     (e) => {
+      if (isMobile) return; // Skip on mobile
       const { currentTarget, clientX, clientY } = e;
       const { left, top } = currentTarget.getBoundingClientRect();
       mouseX.set(clientX - left);
       mouseY.set(clientY - top);
     },
-    [mouseX, mouseY]
+    [mouseX, mouseY, isMobile]
   );
+
+  // On mobile, render simple div without motion
+  if (isMobile) {
+    return <div className={`relative ${className}`}>{children}</div>;
+  }
 
   return (
     <motion.div
@@ -220,6 +240,7 @@ const GlowingCard = ({ children, className }) => {
 };
 
 const AboutUsPage = () => {
+  const isMobile = useIsMobile(); // Hook to detect mobile devices
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const heroRef = useRef(null);
@@ -487,8 +508,8 @@ const AboutUsPage = () => {
               }}
             />
 
-            {/* Enhanced Floating Elements */}
-            {[...Array(8)].map((_, i) => (
+            {/* Enhanced Floating Elements - hidden on mobile for performance */}
+            {!isMobile && [...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute rounded-full"
@@ -516,7 +537,7 @@ const AboutUsPage = () => {
               />
             ))}
 
-            <FloatingParticles />
+            <FloatingParticles isMobile={isMobile} />
           </motion.div>
 
           {/* Hero Content with Scroll Effects */}
@@ -697,6 +718,7 @@ const AboutUsPage = () => {
                             <MagneticButton
                               onClick={handlePlayPause}
                               className="relative group"
+                              isMobile={isMobile}
                             >
                               {/* Multi-layer Glow Effect */}
                               <motion.div
@@ -783,6 +805,7 @@ const AboutUsPage = () => {
                                 <MagneticButton
                                   onClick={handlePlayPause}
                                   className="hover:text-[#Dd1764] transition-colors p-1"
+                                  isMobile={isMobile}
                                 >
                                   {isVideoPlaying ? (
                                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -808,6 +831,7 @@ const AboutUsPage = () => {
                                 <MagneticButton
                                   onClick={handleMuteToggle}
                                   className="hover:text-[#Dd1764] transition-colors p-1"
+                                  isMobile={isMobile}
                                 >
                                   {isMuted ? (
                                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -823,6 +847,7 @@ const AboutUsPage = () => {
                                 <MagneticButton
                                   onClick={handleFullscreen}
                                   className="hover:text-[#Dd1764] transition-colors p-1"
+                                  isMobile={isMobile}
                                 >
                                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
@@ -978,7 +1003,7 @@ const AboutUsPage = () => {
                         className="space-y-4"
                       >
                         {founderData.education.map((edu, index) => (
-                          <GlowingCard key={index} className="group">
+                          <GlowingCard key={index} className="group" isMobile={isMobile}>
                             <motion.div
                               initial={{ opacity: 0, y: 30 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -1090,7 +1115,7 @@ const AboutUsPage = () => {
                   transition={{ delay: 1.2 }}
                 >
                   <Link to="/resources">
-                    <MagneticButton className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white font-bold rounded-full shadow-xl overflow-hidden">
+                    <MagneticButton className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#3F2965] to-[#Dd1764] text-white font-bold rounded-full shadow-xl overflow-hidden" isMobile={isMobile}>
                       {/* Shine Effect */}
                       <motion.span
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full"
@@ -1622,7 +1647,7 @@ const AboutUsPage = () => {
                 transition={{ delay: 0.6 }}
               >
                 <Link to="/booking">
-                  <MagneticButton className="relative group px-12 py-6 bg-gradient-to-r from-[#3F2965] via-[#5a3d7a] to-[#Dd1764] text-white font-bold text-lg rounded-full shadow-2xl overflow-hidden">
+                  <MagneticButton className="relative group px-12 py-6 bg-gradient-to-r from-[#3F2965] via-[#5a3d7a] to-[#Dd1764] text-white font-bold text-lg rounded-full shadow-2xl overflow-hidden" isMobile={isMobile}>
                     {/* Animated Background */}
                     <motion.span
                       className="absolute inset-0 bg-gradient-to-r from-[#Dd1764] via-[#5a3d7a] to-[#3F2965]"
